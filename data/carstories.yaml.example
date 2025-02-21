@@ -1,0 +1,10 @@
+- job: 1
+  challenge: >
+    Something was not perfect at the previous job.
+  action: >
+    I did this and that to change this.
+  result: >
+    Company revenue increased by 1034%.
+  skills:
+    - A skill I used
+    - another skill

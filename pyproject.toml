@@ -1,0 +1,11 @@
+[project]
+name = "cv"
+version = "0.1.0"
+description = "Creates LaTeX formatted resumes from base data"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "anthropic>=0.46.0",
+    "instructor>=1.7.2",
+    "pyyaml>=6.0.2",
+]

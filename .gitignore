@@ -1,0 +1,7 @@
+*.aux
+*.log
+*.pdf
+*.pyc
+*.tex
+data/*.yaml
+data/*.jpg

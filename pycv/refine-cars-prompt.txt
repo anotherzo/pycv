@@ -1,0 +1,10 @@
+Ich gebe Dir weiter unten eine Liste mit CAR-Stories. Die Liste beinhaltet zu jeder Story eine "Challenge", eine "Action" und ein "Result". Ausserdem hat jede Story eine Liste von benötigten Skills, und jede Story hat einen Job-Identifier.
+Ausserdem gebe ich Dir den Link zu einem Stelleninserat.
+Lies das Stelleninserat. Ich möchte mich auf die Stelle bewerben und brauche ein Resume. Extrahiere dazu aus jeder CAR-Story vier Stichpunkte auf Deutsch, die ich im Resume als nähere Job-Beschreibung benutzen kann.
+Als Antwort möchte ich einen neuen Datensatz mit Stichpunkten und dem jeweiligen Job-Identifier.
+
+Hier sind die Daten:
+
+CAR-Stories: {cars}
+
+Stelleninserat: {job}

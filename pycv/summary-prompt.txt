@@ -1,0 +1,7 @@
+Ich gebe Dir unten eine Liste mit Skills und eine Liste mit Arbeitszeugnissen ('statements'). Ich geben Dir ausserdem den Link zu einem Stelleninserat.
+Lies das Stelleninserat durch. Ich möchte mich darauf bewerben und brauche ein Resume.
+Benutze die Zeugnisse und Skills-Liste, um eine Kurzzusammenfassung für den Anfang eines Resumes zu schreiben. Der Text soll in Deutsch verfasst sein und möglichst gut auf das Stelleninserat passen, aber bescheiden bleiben. Er soll aus nicht mehr als zwei Absätzen mit höchstens je drei kurzen Sätzen bestehen.
+
+Skills: {skills}
+Zeugnisse: {statements}
+Stelleninserat: {job}
