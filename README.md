@@ -42,7 +42,7 @@ A Python tool that generates a professional CV/resume in PDF format using LaTeX 
 
 ## Changing things
 
-### Using different AI models
+### Using different AI models
 PyCv uses  [`instructor`](https://python.useinstructor.com) in `ai.py`. If you want to address a different model (the code defaults to Claude), you will have to adapt `client = ...` and the parametrization of the model in the constructor and in `ask()`.
 
 ### Using different prompts and different output languages
