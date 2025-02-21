@@ -2,6 +2,7 @@ import os
 import json
 import yaml
 import logging
+import jinja2
 from pathlib import Path
 import instructor
 from anthropic import Anthropic
@@ -177,7 +178,36 @@ class PyCv:
                 break
         return str
 
-    def generate_latex(self) -> str:
+    def generate_latex(self):
+        """Generate the complete LaTeX document"""
+        self.logger.info("LaTeX-Generierung gestartet.") 
+        latex_jinja_env = jinja2.Environment(
+            block_start_string = '\BLOCK{',
+            block_end_string = '}',
+            variable_start_string = '\VAR{',
+            variable_end_string = '}',
+            comment_start_string = '\#{',
+            comment_end_string = '}',
+            line_statement_prefix = '%%',
+            line_comment_prefix = '%#',
+            trim_blocks = True,
+            autoescape = False,
+            loader = jinja2.FileSystemLoader(os.path.abspath('./templates'))
+        )
+        template = latex_jinja_env.get_template('resume.jinja.tex')
+        return template.render(
+                headers = self.generate_header_information(),
+                fullname = self.datastore.headers['name'],
+                summary = self.ai.get_summary(self.datastore.skills, self.datastore.statements, self.joblink),
+                jobs = self.datastore.jobs,
+                jobdescriptions = self.ai.get_job_summaries(self.datastore.jobs, self.datastore.statements, self.joblink),
+                jobitems = self.ai.get_experience(self.datastore.jobs, self.datastore.carstories, jobdescriptions, self.joblink),
+                education = self.datastore.education,
+                skills = self.datastore.skills,
+                languages = self.datastore.languages
+        )
+
+    def oldgenerate_latex(self) -> str:
         """Generate the complete LaTeX document"""
         self.logger.info("LaTeX-Generierung gestartet.") 
         sections = [
