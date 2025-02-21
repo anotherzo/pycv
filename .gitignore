@@ -2,6 +2,6 @@
 *.log
 *.pdf
 *.pyc
-*.tex
+./*.tex
 data/*.yaml
 data/*.jpg
