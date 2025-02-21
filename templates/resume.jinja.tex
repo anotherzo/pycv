@@ -1,0 +1,76 @@
+\documentclass[11pt, a4paper]{awesome-cv}
+\usepackage[ngerman]{babel}
+\usepackage{multicol}
+\geometry{left=2.5cm, top=2cm, right=2.5cm, bottom=2.5cm, footskip=1.5cm}
+\definecolor{awesome}{HTML}{a57b5c}
+\setbool{acvSectionColorHighlight}{true}
+\renewcommand{\acvHeaderSocialSep}{\quad\textbar\quad}
+
+\VAR{headers}
+
+\begin{document}
+
+\makecvheader[C]
+\makecvfooter{\today}{\VAR{fullname}}{\thepage}
+
+\cvsection{Zusammenfassung}
+\begin{cvparagraph}
+
+
+\begin{multicols}{2}
+  \VAR{summary}
+\end{multicols}
+
+\end{cvparagraph}
+
+\cvsection{Berufserfahrung}
+\begin{cventries}
+\BLOCK{for entry in jobs}
+\BLOCK{date_range = f"{job.date[0]}\\textemdash {job.date[1]}"
+    jobstories = [story for story in carstories if story.job == job.job]
+    jobdesc = [description for description in jobdescriptions if description.job == job.job]
+}
+\cventry
+  {\VAR{entry.position}}
+  {\VAR{entry.organization}}
+  {\VAR{entry.location}}
+  {\VAR{daterange}}
+  {
+    \BLOCK{if len(jobdesc) > 0}
+    \vspace{-0.2cm}
+    \VAR{jobdesc[0].description}
+    \vspace{0.6cm}
+    \BLOCK{endif}
+    \BLOCK{if len(jobstories) > 0}
+    \begin{cvitems}
+      \BLOCK{for story in jobstories}
+    \item {\VAR{story.item}}
+      \BLOCK{endfor}
+    \end{cvitems}
+    \BLOCK{endfor}
+  }
+\BLOCK{endfor}
+\end{cventries}
+
+\cvsection{Ausbildung}
+\begin{cventries}
+  \BLOCK{for entry in education}
+  \cventry{\VAR{entry.title}}{\VAR{entry.organization}}{\VAR{entry.location}}{\VAR{entry.timerange}}{\VAR{entry.desc}}
+  \BLOCK{endfor}
+\end{cventries}
+
+\cvsection{Technische Fähigkeiten}
+\begin{cvskills}
+  \BLOCK{for entry in skills}
+\cvskill{\VAR{entry.category}}{\VAR{entry.items}}
+  \BLOCK{endfor}
+\end{cvskills}
+
+\cvsection{Sprachen}
+\begin{cvskills}
+  \BLOCK{for entry in languages}
+\cvskill{\VAR{entry.language}}{\VAR{entry.level}}
+  \BLOCK{endfor}
+\end{cvskills}
+
+\end{document}
