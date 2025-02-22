@@ -1,0 +1,144 @@
+\documentclass[11pt, a4paper]{awesome-cv}
+\RequirePackage{fontspec}
+\usepackage[ngerman]{babel}
+\usepackage{multicol}
+\geometry{left=2.5cm, top=2cm, right=2.5cm, bottom=2.5cm, footskip=1.5cm}
+\definecolor{awesome}{HTML}{a57b5c}
+\setbool{acvSectionColorHighlight}{true}
+\makeatletter
+\renewcommand{\acvHeaderSocialSep}{\quad\textbar\quad}
+\newfontfamily\firafont[
+  Path=\string~/Library/Fonts/,
+  UprightFont = *-Regular,
+  BoldFont = *-Bold,
+  ItalicFont = *-Italic,
+  BoldItalicFont = *-BoldItalic
+]{FiraSans}
+\DeclareRobustCommand{\fira}[1]{{\firafont #1}}
+\newfontfamily\lorafont[
+  Path=\string~/Library/Fonts/,
+  UprightFont = *-Regular,
+  BoldFont = *-Bold,
+  ItalicFont = *-Italic,
+  BoldItalicFont = *-BoldItalic
+]{Lora}
+\DeclareRobustCommand{\lora}[1]{{\lorafont #1}}
+\renewcommand*{\headerfont}{\lorafont}
+\renewcommand*{\headerfontlight}{\lorafont}
+\renewcommand*{\footerfont}{\firafont}
+\renewcommand*{\bodyfont}{\firafont}
+\renewcommand*{\bodyfontlight}{\firafont}
+\renewcommand*{\sectionstyle}[1]{{\fontsize{16pt}{1em}\headerfont\bfseries\color{text}\@sectioncolor #1}}
+\renewcommand*{\subsectionstyle}[1]{{\fontsize{12pt}{1em}\headerfont\scshape\textcolor{text}{#1}}}
+\renewcommand*{\paragraphstyle}{\fontsize{9pt}{1.2em}\bodyfontlight\upshape\color{text}}
+\renewcommand*{\cventry}[5]{%
+  \vspace{-2.0mm}
+  \linespread{1.2}\selectfont
+  \setlength\tabcolsep{0pt}
+  \setlength{\extrarowheight}{0pt}
+  \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} L{\textwidth - 4.5cm} R{4.5cm}}
+    \ifempty{#2#3}
+      {\entrypositionstyle{#1} & \entrydatestyle{#4} \\}
+      {\entrytitlestyle{#2} & \entrylocationstyle{#3} \\
+      \entrypositionstyle{#1} & \entrydatestyle{#4} \\}
+    \ifstrempty{#5}
+      {}
+      {\multicolumn{2}{p{\textwidth}}{\descriptionstyle{#5}} \\}
+  \end{tabular*}%
+}
+\renewenvironment{cvitems}{%
+  \vspace{-4.0mm}
+  \begin{justify}
+  \begin{itemize}[leftmargin=2ex, nosep, noitemsep]
+    \setlength{\parskip}{0pt}
+    \renewcommand{\labelitemi}{\bullet}
+}{%
+  \end{itemize}
+  \end{justify}
+  % \vspace{-4.0mm}
+}
+
+\BLOCK{for tag in headers}
+\BLOCK{if headers[tag] is string}
+\\VAR{tag}{\VAR{headers[tag]}}
+\BLOCK{else}
+\\VAR{tag}
+\BLOCK{for entry in headers[tag]}
+{\VAR{entry}}
+\BLOCK{endfor}
+\BLOCK{endif}
+\BLOCK{endfor}
+
+\begin{document}
+
+\makecvheader[C]
+\makecvfooter{\today}{\VAR{name[0]} \VAR{name[1]}}{\thepage}
+
+\cvsection{Zusammenfassung}
+\begin{cvparagraph}
+
+
+\begin{multicols}{2}
+  \VAR{summary.summary}
+\end{multicols}
+
+\end{cvparagraph}
+
+\cvsection{Berufserfahrung}
+\begin{cventries}
+\BLOCK{for entry in jobblocks}
+\cventry
+  {\VAR{entry[0].position}}
+  {\VAR{entry[0].organization}}
+  {\VAR{entry[0].location}}
+  {\VAR{entry[0].date[0]}\textemdash \VAR{entry[0].date[1]}}
+  \BLOCK{if entry[1]|length == 0 and entry[2]|length == 0}
+{}
+  \BLOCK{else}
+  {
+  \BLOCK{if entry[1]|length > 0}
+  \vspace{-0.2cm}
+  \VAR{entry[1][0].description}
+  \vspace{0.6cm}
+  \BLOCK{endif}
+  \BLOCK{if entry[2]|length > 0}
+  \begin{cvitems}
+    \BLOCK{for item in entry[2]}
+  \item {\VAR{item.item}}
+    \BLOCK{endfor}
+  \end{cvitems}
+  \BLOCK{endif}
+}
+  \BLOCK{endif}
+
+\BLOCK{endfor}
+\end{cventries}
+
+\cvsection{Ausbildung}
+\begin{cventries}
+  \BLOCK{for entry in education}
+  \cventry{\VAR{entry.title}}{\VAR{entry.organization}}{\VAR{entry.location}}{\VAR{entry.date[0]}\textemdash \VAR{entry.date[1]}}
+  \BLOCK{if entry.desc != None }
+  {\VAR{entry.desc}}
+  \BLOCK{else}
+{}
+  \BLOCK{endif}
+
+  \BLOCK{endfor}
+\end{cventries}
+
+\cvsection{Technische Fähigkeiten}
+\begin{cvskills}
+  \BLOCK{for entry in skills}
+  \cvskill{\VAR{entry.category}}{\VAR{ entry.items | join(", ")}}
+  \BLOCK{endfor}
+\end{cvskills}
+
+\cvsection{Sprachen}
+\begin{cvskills}
+  \BLOCK{for entry in languages}
+\cvskill{\VAR{entry.language}}{\VAR{entry.level}}
+  \BLOCK{endfor}
+\end{cvskills}
+
+\end{document}

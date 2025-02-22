@@ -35,7 +35,7 @@ class Ai:
         res = [item.model_dump() for item in arr]
         return json.dumps(res)
 
-    def get_experience(self, jobs:list, carstories:list, descriptions:list, joblink:str) -> Iterable[CarStory]:
+    def get_experience(self, jobs:list, carstories:list, descriptions:list, joblink:str) -> Iterable[Cvitem]:
         promptpath = os.path.join(os.path.dirname(__file__), 'cars-prompt.txt')
         with open(promptpath, 'r') as f:
             prompt = f.read()
@@ -66,7 +66,7 @@ class Ai:
         )
         return self.ask(prompt, Iterable[JobDescription])
 
-    def get_summary(self, skills:list, statements:list, joblink:str) -> Iterable[JobDescription]:
+    def get_summary(self, skills:list, statements:list, joblink:str) -> Summary:
         promptpath = os.path.join(os.path.dirname(__file__), 'summary-prompt.txt')
         with open(promptpath, 'r') as f:
             prompt = f.read()
@@ -76,4 +76,26 @@ class Ai:
                     job=joblink
         )
         return self.ask(prompt, Summary)
+
+
+
+class StubAi:
+    def get_experience(self, jobs:list, carstories:list, descriptions:list, joblink:str) -> Iterable[CarStory]:
+        return [
+            Cvitem(job=1, item="foo"),
+            Cvitem(job=1, item="bar"),
+            Cvitem(job=1, item="baz"),
+            Cvitem(job=2, item="foo"),
+            Cvitem(job=2, item="bar"),
+            Cvitem(job=2, item="baz"),
+        ]
+
+    def get_summary(self, skills:list, statements:list, joblink:str) -> Iterable[JobDescription]:
+        return Summary(summary="This is some example text.")
+
+    def get_job_summaries(self, skills:list, statements:list, joblink:str) -> Iterable[JobDescription]:
+        return [
+                JobDescription(job=1, description="Something I've done"),
+                JobDescription(job=2, description="Something else I've done"),
+        ]
 

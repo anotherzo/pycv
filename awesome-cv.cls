@@ -24,6 +24,7 @@
 \ProvidesClass{awesome-cv}[2017/02/05 v1.6.1 Awesome Curriculum Vitae Class]
 \NeedsTeXFormat{LaTeX2e}
 
+
 %-------------------------------------------------------------------------------
 %                Class options
 %
@@ -75,7 +76,6 @@
 \RequirePackage{unicode-math}
 % Needed to use icons from font-awesome
 \RequirePackage{fontawesome5}
-\RequirePackage{fontspec}
 \RequirePackage{roboto}
 \RequirePackage[default,opentype]{sourcesanspro}
 % Needed for the photo ID
@@ -163,30 +163,11 @@
 %-------------------------------------------------------------------------------
 %                Configuration for fonts
 %-------------------------------------------------------------------------------
-\AtBeginDocument{
-  \newfontfamily\firafont[
-    Path=\string~/Library/Fonts/,
-    UprightFont = *-Regular,
-    BoldFont = *-Bold,
-    ItalicFont = *-Italic,
-    BoldItalicFont = *-BoldItalic
-  ]{FiraSans}
-  \DeclareRobustCommand{\fira}[1]{{\firafont #1}}
-  \newfontfamily\lorafont[
-    Path=\string~/Library/Fonts/,
-    UprightFont = *-Regular,
-    BoldFont = *-Bold,
-    ItalicFont = *-Italic,
-    BoldItalicFont = *-BoldItalic
-  ]{Lora}
-  \DeclareRobustCommand{\lora}[1]{{\lorafont #1}}
-}
-
-\newcommand*{\headerfont}{\lorafont}
-\newcommand*{\headerfontlight}{\lorafont}
-\newcommand*{\footerfont}{\firafont}
-\newcommand*{\bodyfont}{\firafont}
-\newcommand*{\bodyfontlight}{\firafont}
+\newcommand*{\headerfont}{\roboto}
+\newcommand*{\headerfontlight}{\robotolight}
+\newcommand*{\footerfont}{\sourcesanspro}
+\newcommand*{\bodyfont}{\sourcesanspro}
+\newcommand*{\bodyfontlight}{\sourcesansprolight}
 
 %-------------------------------------------------------------------------------
 %                Configuration for styles
@@ -200,9 +181,9 @@
 \newcommand*{\headersocialstyle}[1]{{\fontsize{6.8pt}{1em}\headerfont\color{text} #1}}
 \newcommand*{\headerquotestyle}[1]{{\fontsize{9pt}{1em}\bodyfont\itshape\color{darktext} #1}}
 \newcommand*{\footerstyle}[1]{{\fontsize{8pt}{1em}\footerfont\scshape\color{lighttext} #1}}
-\newcommand*{\sectionstyle}[1]{{\fontsize{16pt}{1em}\headerfont\bfseries\color{text}\@sectioncolor #1}}
-\newcommand*{\subsectionstyle}[1]{{\fontsize{12pt}{1em}\headerfont\scshape\textcolor{text}{#1}}}
-\newcommand*{\paragraphstyle}{\fontsize{9pt}{1.2em}\bodyfontlight\upshape\color{text}}
+\newcommand*{\sectionstyle}[1]{{\fontsize{16pt}{1em}\bodyfont\bfseries\color{text}\@sectioncolor #1}}
+\newcommand*{\subsectionstyle}[1]{{\fontsize{12pt}{1em}\bodyfont\scshape\textcolor{text}{#1}}}
+\newcommand*{\paragraphstyle}{\fontsize{9pt}{1em}\bodyfontlight\upshape\color{text}}
 
 % For elements of entry
 \newcommand*{\entrytitlestyle}[1]{{\fontsize{10pt}{1em}\bodyfont\bfseries\color{darktext} #1}}
@@ -692,7 +673,6 @@
 % Usage: \cventry{<position>}{<title>}{<location>}{<date>}{<description>}
 \newcommand*{\cventry}[5]{%
   \vspace{-2.0mm}
-  \linespread{1.2}\selectfont
   \setlength\tabcolsep{0pt}
   \setlength{\extrarowheight}{0pt}
   \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} L{\textwidth - 4.5cm} R{4.5cm}}
@@ -702,7 +682,7 @@
       \entrypositionstyle{#1} & \entrydatestyle{#4} \\}
     \ifstrempty{#5}
       {}
-      {\multicolumn{2}{p{\textwidth}}{\descriptionstyle{#5}} \\}
+      {\multicolumn{2}{L{\textwidth}}{\descriptionstyle{#5}} \\}
   \end{tabular*}%
 }
 
@@ -776,7 +756,7 @@
 }{%
   \end{itemize}
   \end{justify}
-  % \vspace{-4.0mm}
+  \vspace{-4.0mm}
 }
 
 

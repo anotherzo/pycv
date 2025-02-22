@@ -12,7 +12,7 @@ class Education(BaseModel):
     title: str
     organization: str
     location: str
-    timerange: str
+    date: List[str]
     desc: Optional[str] = None
 
 class Job(BaseModel):
