@@ -6,3 +6,4 @@
 data/*.yaml
 data/*.jpg
 .aider*
+.env
