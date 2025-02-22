@@ -5,9 +5,10 @@ A Python tool that generates a professional CV/resume in PDF format using LaTeX 
 ## Features
 
 - Loads CV data from YAML files
-- Takes a link to a job ad to fit your resume to the position you seek
+- Takes a link to a job ad to fit your resume and coverletter to the position you seek
+- No (all too) personal information is sent to the interwebs
 - Uses Claude for content enhancement
-- Generates a professional PDF using Jinja2 and LaTeX
+- Generates professional PDFs using Jinja2 and LaTeX
 - Based on the Awesome-CV template
 
 ## Requirements

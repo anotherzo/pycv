@@ -24,10 +24,8 @@ class PyCv:
             self.ai = StubAi()
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def generate_latex(self):
-        """Generate the complete LaTeX document"""
-        self.logger.info("LaTeX-Generierung gestartet.") 
-        latex_jinja_env = jinja2.Environment(
+    def _get_jinja_env(self):
+        return jinja2.Environment(
             block_start_string = '\BLOCK{',
             block_end_string = '}',
             variable_start_string = '\VAR{',
@@ -40,8 +38,30 @@ class PyCv:
             autoescape = False,
             loader = jinja2.FileSystemLoader(os.path.abspath('./templates'))
         )
+
+    def generate_coverletter(self):
+        """Generate the complete LaTeX document"""
+        self.logger.info("Started processing coverletter...") 
+        latex_jinja_env = self._get_jinja_env()
+        template = latex_jinja_env.get_template('coverletter.tex.jinja')
+        latex_coverletter = template.render(
+                headers = self.datastore.headers,
+                letterinfo = self.ai.get_letterinfo(
+                    self.datastore.statements,
+                    self.datastore.carstories,
+                    self.joblink),
+                name = self.datastore.headers['name'],
+        )
+        filename = "coverletter."  + self.projectname + ".tex"
+        with open(filename, "w") as fout:
+            fout.write(latex_coverletter)
+
+    def generate_resume(self):
+        """Generate the complete LaTeX document"""
+        self.logger.info("Started processing resume...") 
+        latex_jinja_env = self._get_jinja_env()
         template = latex_jinja_env.get_template('resume.tex.jinja')
-        return template.render(
+        latex_resume = template.render(
                 headers = self.datastore.headers,
                 name = self.datastore.headers['name'],
                 summary = self.ai.get_summary(self.datastore.skills, self.datastore.statements, self.joblink),
@@ -50,6 +70,9 @@ class PyCv:
                 skills = self.datastore.skills,
                 languages = self.datastore.languages
         )
+        filename = "resume."  + self.projectname + ".tex"
+        with open(filename, "w") as fout:
+            fout.write(latex_resume)
 
     def _get_job_blocks(self) -> list:
         jobblocks = []
@@ -62,6 +85,5 @@ class PyCv:
         return jobblocks
 
     def save_latex(self):
-        filename = self.projectname + ".tex"
-        with open(filename, "w") as fout:
-            fout.write(self.generate_latex())
+        self.generate_resume()
+        self.generate_coverletter()

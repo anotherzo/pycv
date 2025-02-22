@@ -26,6 +26,12 @@ class JobDescription(BaseModel):
     job: int
     description: str
 
+class Letterinfo(BaseModel):
+    recipient: List[str]
+    subject: str
+    opening: str
+    content: str
+
 class Statement(BaseModel):
     job: int
     statement: str

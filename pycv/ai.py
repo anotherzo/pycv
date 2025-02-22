@@ -6,7 +6,7 @@ import instructor
 from anthropic import Anthropic
 from typing import Iterable
 from pydantic import BaseModel, Field
-from .baseclasses import CarStory, Cvitem, JobDescription, Summary
+from .baseclasses import CarStory, Cvitem, JobDescription, Summary, Letterinfo
 
 class Ai:
     def __init__(self):
@@ -77,6 +77,16 @@ class Ai:
         )
         return self.ask(prompt, Summary)
 
+    def get_letterinfo(self, statements:list, carstories:list, joblink:str) -> Letterinfo:
+        promptpath = os.path.join(os.path.dirname(__file__), 'letterinfo-prompt.txt')
+        with open(promptpath, 'r') as f:
+            prompt = f.read()
+        prompt = prompt.format(
+                    job=joblink,
+                    statements=self.get_json_for(statements),
+                    cars=self.get_json_for(carstories),
+        )
+        return self.ask(prompt, Letterinfo)
 
 
 class StubAi:
@@ -99,3 +109,11 @@ class StubAi:
                 JobDescription(job=2, description="Something else I've done"),
         ]
 
+    def get_letterinfo(self, joblink:str) -> Letterinfo:
+        return Letterinfo(
+                recipient=["ABC Company","Somestreet 42", "Happytown"],
+                title="Application for the position of Head Of Everything",
+                opening="Friends, romans, countrymen, lend me your ear",
+                content="I really really want to get this thing",
+                closing="Ceterum censeo carthaginem esse delendam,",
+        )

@@ -1,0 +1,69 @@
+\documentclass[11pt, a4paper]{awesome-cv}
+\RequirePackage{fontspec}
+\usepackage[ngerman]{babel}
+\geometry{left=2.5cm, top=2cm, right=2.5cm, bottom=2.5cm, footskip=1.5cm}
+\definecolor{awesome}{HTML}{a57b5c}
+\setbool{acvSectionColorHighlight}{true}
+\makeatletter
+
+\renewcommand{\acvHeaderSocialSep}{\quad\textbar\quad}
+\newfontfamily\firafont[
+  Path=\string~/Library/Fonts/,
+  UprightFont = *-Regular,
+  BoldFont = *-Bold,
+  ItalicFont = *-Italic,
+  BoldItalicFont = *-BoldItalic
+]{FiraSans}
+\DeclareRobustCommand{\fira}[1]{{\firafont #1}}
+\newfontfamily\lorafont[
+  Path=\string~/Library/Fonts/,
+  UprightFont = *-Regular,
+  BoldFont = *-Bold,
+  ItalicFont = *-Italic,
+  BoldItalicFont = *-BoldItalic
+]{Lora}
+\DeclareRobustCommand{\lora}[1]{{\lorafont #1}}
+\renewcommand*{\headerfont}{\lorafont}
+\renewcommand*{\headerfontlight}{\lorafont}
+\renewcommand*{\footerfont}{\firafont}
+\renewcommand*{\bodyfont}{\firafont}
+\renewcommand*{\bodyfontlight}{\firafont}
+\renewcommand*{\sectionstyle}[1]{{\fontsize{16pt}{1em}\headerfont\bfseries\color{text}\@sectioncolor #1}}
+\renewcommand*{\subsectionstyle}[1]{{\fontsize{12pt}{1em}\headerfont\scshape\textcolor{text}{#1}}}
+\renewcommand*{\paragraphstyle}{\fontsize{9pt}{1.2em}\bodyfontlight\upshape\color{text}}
+
+\BLOCK{for tag in headers}
+\BLOCK{if headers[tag] is string}
+\\VAR{tag}{\VAR{headers[tag]}}
+\BLOCK{else}
+\\VAR{tag}
+\BLOCK{for entry in headers[tag]}
+{\VAR{entry}}
+\BLOCK{endfor}
+\BLOCK{endif}
+\BLOCK{endfor}
+
+\recipient
+  {\VAR{letterinfo.recipient[0]}}
+  {\VAR{letterinfo.recipient[1]}, \VAR{letterinfo.recipient[2]}}
+\letterdate{\today}
+\lettertitle{\VAR{letterinfo.subject}}
+\letteropening{\VAR{letterinfo.opening}}
+\letterclosing{Mit freundlichen Grüssen,}
+\letterenclosure[Attached]{Curriculum Vitae}
+
+\begin{document}
+\makecvheader[R]
+\makecvfooter
+  {\today}
+  {\VAR{name[0]} \VAR{name[1]}}
+  {Seite \thepage}
+
+\makelettertitle
+\begin{cvletter}
+
+\VAR{letterinfo.content}
+
+\end{cvletter}
+\makeletterclosing
+\end{document}
