@@ -1,6 +1,7 @@
 *.aux
 *.log
 *.pdf
+*.tex
 *.pyc
 data/*.yaml
 data/*.jpg

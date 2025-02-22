@@ -40,7 +40,7 @@ class PyCv:
             autoescape = False,
             loader = jinja2.FileSystemLoader(os.path.abspath('./templates'))
         )
-        template = latex_jinja_env.get_template('resume.jinja.tex')
+        template = latex_jinja_env.get_template('resume.tex.jinja')
         return template.render(
                 headers = self.datastore.headers,
                 name = self.datastore.headers['name'],
