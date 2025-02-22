@@ -1,0 +1,14 @@
+- job: 1
+  position: Super Position
+  organization: Global Corp
+  location: Paris
+  date:
+    - "Oct 2019"
+    - "Dec 2024"
+- job: 2
+  position: Junior Super Position
+  organization: Local ACME
+  location: Montpellier
+  date:
+    - "Aug 2015"
+    - "Oct 2019"
