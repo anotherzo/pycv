@@ -13,9 +13,9 @@ from .baseclasses import CarStory, Cvitem, Language
 from .ai import Ai, StubAi
 
 class PyCv:
-    def __init__(self, joblink: str, projectname: str):
+    def __init__(self, joblink: str, projectname: str, datadir: str = 'data'):
         """Initialize the PyCv class with OpenAI credentials"""
-        self.datastore = YamlStore()
+        self.datastore = YamlStore(datadir)
         self.datastore.load_data()
         self.joblink = joblink
         self.projectname = projectname
