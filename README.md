@@ -70,6 +70,20 @@ Entries in `data/headers` are transformed into header tags defined in `awesome-c
 
 ## Data Structure
 
+### CAR stories (`carstories.yaml`)
+(`job` links with identifier in `jobs.yaml`)
+```yaml
+- job: 1
+  challenge: "Something happened"
+  action: "I did this"
+  result: "This was the outcome"
+  skills:
+  - Skill 1
+  - Skill 2
+- job: 2
+  ...
+```
+
 ### Education (`education.yaml`)
 ```yaml
 - edu: 1
@@ -80,6 +94,8 @@ Entries in `data/headers` are transformed into header tags defined in `awesome-c
   - "Start"
   - "End"
   desc: "Optional description"
+- edu: 2
+  ...
 ```
 
 ### Jobs (`jobs.yaml`)
@@ -91,24 +107,35 @@ Entries in `data/headers` are transformed into header tags defined in `awesome-c
   date:
     - "Start"
     - "End"
+- job: 2
+  ...
+```
+
+### Languages (`languages.yaml`)
+```yaml
+- language: Some Language
+  level: Mostly fine
+- language: Other Language
+  ...
 ```
 
 ### Skills (`skills.yaml`)
 ```yaml
-- Category:
+- category: Some Topic I Know About
   - "Skill 1"
   - "Skill 2"
+- category:
+  ...
 ```
 
-### CAR stories (`carstories.yaml`)
+### Statements (`statements.yaml`)
+(`job` links with identifier in `jobs.yaml`)
 ```yaml
+- job: 2
+  statement: >
+   Mr me was hired as a Super Contractor to fix the wrinkles in the fabric of spacetime in our lavatories. He...
 - job: 1
-  challenge: "Something happened"
-  action: "I did this"
-  result: "This was the outcome"
-  skills:
-  - Skill 1
-  - Skill 2
+  ...
 ```
 
 ### Personal Information (`headers.yaml`)
@@ -124,11 +151,6 @@ Entries in `data/headers` are transformed into header tags defined in `awesome-c
   linkedin: findme-here-aswell
 ```
 
-### Languages (`languages.yaml`)
-```yaml
-- language: Some Language
-  level: Mostly fine
-```
 
 ### Statements (`statements.yaml`)
 ```yaml
