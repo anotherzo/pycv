@@ -6,12 +6,13 @@ A Python tool that generates a professional CV/resume in PDF format using LaTeX 
 
 - Loads CV data from YAML files
 - Uses Claude for content enhancement
-- Generates a professional PDF using LaTeX
+- Generates a professional PDF using Jinja2 and LaTeX
 - Based on the Awesome-CV template
 
 ## Requirements
 
 - Python 3.13+
+- uv (not required but strongly encouraged)
 - LaTeX installation with XeLaTeX
 - Fonts: Lora and Fira
 - Some AI key comes in handy
@@ -35,7 +36,7 @@ A Python tool that generates a professional CV/resume in PDF format using LaTeX 
    - `languages.yaml`: The languages you speak
    - `statements.yaml`: Statements about last job positions, with job identifiers
 
-2. Generate your CV:
+2. Generate your resume:
    ```bash
     uv run main.py
    ```
@@ -49,9 +50,7 @@ PyCv uses  [`instructor`](https://python.useinstructor.com) in `ai.py`. If you w
 All AI prompts are save in `pycv/*-prompt.txt`. Feel free to adapt those to your needs. The current version is in German; you might want to change that.
 
 ### Changing the layout of the PDF
-While the PDF generation makes heavy use of the `awesome-cv` LaTeX template, the given version has been adapted to my needs. Most obvious are the font changes. Feel free to simply replace the given `awesome-cv.cls` version with one that suits your needs.
-
-Some configuration (eg. color) is done in `pycv/pycv.py` with `generate_latex()`. You might want to check that out first.
+All things layout are done in the jinja2 templates in the templates folder. If you want to simply test different layout options, you can run `main.py` with the project name `test`; this will simply exchange the AI parts with some default strings to test if the LaTeX part works as expected.
 
 ## Data Structure
 
@@ -61,7 +60,9 @@ Some configuration (eg. color) is done in `pycv/pycv.py` with `generate_latex()`
   title: "Degree Title"
   organization: "Institution Name"
   location: "Location"
-  timerange: "Start --- End"
+  date:
+  - "Start"
+  - "End"
   desc: "Optional description"
 ```
 
