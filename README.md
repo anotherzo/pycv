@@ -84,7 +84,7 @@ All things layout are done in the jinja2 templates in the templates folder. If y
   - "Skill 2"
 ```
 
-### CAR stories (`carstories.yaml`)
+### CAR stories (`carstories.yaml`)
 ```yaml
 - job: 1
   challenge: "Something happened"
