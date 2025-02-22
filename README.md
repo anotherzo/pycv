@@ -57,6 +57,9 @@ When creating these data files, you might want to make sure you do not include a
 
 ***Not*** sent are information in `data/headers.yaml` such as your phone number or your email address.
 
+### But this is all in German?
+Yes, because that's what fits my needs. Feel free to change the template in `template/` or the prompts in `pycv/*-prompt.txt` to your own taste.
+
 ### Using different AI models
 PyCv uses  [`instructor`](https://python.useinstructor.com) in `ai.py`. If you want to address a different model (the code defaults to Claude), you will have to adapt `client = ...` and the parametrization of the model in the constructor and in `ask()`.
 
