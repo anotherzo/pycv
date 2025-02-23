@@ -32,6 +32,22 @@
 \renewcommand*{\subsectionstyle}[1]{{\fontsize{12pt}{1em}\headerfont\scshape\textcolor{text}{#1}}}
 \renewcommand*{\paragraphstyle}{\fontsize{9pt}{1.2em}\bodyfontlight\upshape\color{text}}
 
+\renewcommand*{\makelettertitle}{%
+  \vspace{8.4mm}
+  \setlength\tabcolsep{0pt}
+  \setlength{\extrarowheight}{0pt}
+  \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}} L{\textwidth - 4.5cm} R{4.5cm}}
+    \recipienttitlestyle{\@recipientname} & \letterdatestyle{\@letterdate}
+  \end{tabular*}
+  \begin{singlespace}
+    \recipientaddressstyle{\@recipientaddress} \\\\
+  \end{singlespace}
+  \ifthenelse{\isundefined{\@lettertitle}}
+    {}
+    {\lettertitlestyle{\@lettertitle}\vspace{0.8cm} \\}
+  \lettertextstyle{\@letteropening}
+}
+
 \BLOCK{for tag in headers}
 \BLOCK{if headers[tag] is string}
 \\VAR{tag}{\VAR{headers[tag]}}

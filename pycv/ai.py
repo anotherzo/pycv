@@ -109,11 +109,10 @@ class StubAi:
                 JobDescription(job=2, description="Something else I've done"),
         ]
 
-    def get_letterinfo(self, joblink:str) -> Letterinfo:
+    def get_letterinfo(self, statements:list, carstories:list, joblink:str) -> Letterinfo:
         return Letterinfo(
-                recipient=["ABC Company","Somestreet 42", "Happytown"],
-                title="Application for the position of Head Of Everything",
+                recipient=["ABC Company","Somestreet 42 Happytown"],
+                subject="Application for the position of Head Of Everything",
                 opening="Friends, romans, countrymen, lend me your ear",
                 content="I really really want to get this thing",
-                closing="Ceterum censeo carthaginem esse delendam,",
         )

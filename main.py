@@ -14,8 +14,8 @@ def main():
     # Generate and save LaTeX
     cv.save_latex()
 
-    subprocess.run('xelatex resume.' + projectname + '.tex')
-    subprocess.run('xelatex coverletter.' + projectname + '.tex')
+    subprocess.run(['xelatex', 'resume.' + projectname + '.tex'])
+    subprocess.run(['xelatex', 'coverletter.' + projectname + '.tex'])
 
 if __name__ == "__main__":
      main()
