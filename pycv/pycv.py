@@ -51,6 +51,7 @@ class PyCv:
                     self.datastore.carstories,
                     self.joblink),
                 name = self.datastore.headers['name'],
+                joblink = self.joblink,
         )
         filename = "coverletter."  + self.projectname + ".tex"
         with open(filename, "w") as fout:
@@ -68,7 +69,8 @@ class PyCv:
                 jobblocks = self._get_job_blocks(),
                 education = self.datastore.education,
                 skills = self.datastore.skills,
-                languages = self.datastore.languages
+                languages = self.datastore.languages,
+                joblink = self.joblink,
         )
         filename = "resume."  + self.projectname + ".tex"
         with open(filename, "w") as fout:
