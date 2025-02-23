@@ -36,6 +36,7 @@ class Ai:
         return json.dumps(res)
 
     def get_experience(self, jobs:list, carstories:list, descriptions:list, joblink:str) -> Iterable[Cvitem]:
+        self.logger.info("Getting job experience information...")
         promptpath = os.path.join(os.path.dirname(__file__), 'cars-prompt.txt')
         with open(promptpath, 'r') as f:
             prompt = f.read()
@@ -56,6 +57,7 @@ class Ai:
         return self.ask(prompt, Iterable[Cvitem])
 
     def get_job_summaries(self, skills:list, statements:list, joblink:str) -> Iterable[JobDescription]:
+        self.logger.info("Getting job summaries...")
         promptpath = os.path.join(os.path.dirname(__file__), 'jobdescription-prompt.txt')
         with open(promptpath, 'r') as f:
             prompt = f.read()
@@ -67,6 +69,7 @@ class Ai:
         return self.ask(prompt, Iterable[JobDescription])
 
     def get_summary(self, skills:list, statements:list, joblink:str) -> Summary:
+        self.logger.info("Getting resume summary...")
         promptpath = os.path.join(os.path.dirname(__file__), 'summary-prompt.txt')
         with open(promptpath, 'r') as f:
             prompt = f.read()
@@ -78,6 +81,7 @@ class Ai:
         return self.ask(prompt, Summary)
 
     def get_letterinfo(self, statements:list, carstories:list, joblink:str) -> Letterinfo:
+        self.logger.info("Getting coverletter...")
         promptpath = os.path.join(os.path.dirname(__file__), 'letterinfo-prompt.txt')
         with open(promptpath, 'r') as f:
             prompt = f.read()
