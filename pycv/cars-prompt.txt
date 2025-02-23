@@ -1,6 +1,6 @@
 Ich gebe dir zwei Datensätze. Im ersten Datensatz befinden sich Job-Positionen mit einem numerischen Identifier. Im zweiten Datensatz befinden sich CAR-Stories mit "Action", "Challenge", "Result" und einer Liste von nötigen Skills. Jede CAR-Story ist über den Job-Identifier an einen Job gebunden.
 Ich gebe Dir ausserdem den Link zu einem Stelleninserat.
-Lies das Stelleninserat durch. Dann suche aus der Liste von CAR-Stories für jede Stelle in "Jobs" jeweils bis zu drei Stories heraus, die am besten zum Job-Inserat passen. Für die Jobs mit dem Identifier 1 und 2 brauche ich mindestens je zwei CAR-Stories.
+Lies das Stelleninserat durch. Dann suche aus der Liste von CAR-Stories für jede Stelle in "Jobs" jeweils bis zu vier Stories heraus, die am besten zum Job-Inserat passen. Für die Jobs mit dem Identifier 1 und 2 brauche ich mindestens je zwei CAR-Stories.
 Als Antwort möchte ich einen neuen Datensatz mit den ausgewählten CAR-Stories.
 Job-Positionen: {jobs}
 CAR-Stories: {cars}
