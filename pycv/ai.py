@@ -111,6 +111,9 @@ class Ai:
                         response_model=respmodel,
                         messages=messages
                     )
+                except Exception as e:
+                    self.logger.error(f"Error with OpenAI provider: {e}")
+                    raise
             # For custom provider
             elif self.provider_type == 'custom':
                 try:
@@ -206,9 +209,10 @@ class Ai:
                         
                     return response
                 except Exception as e:
-                    self.logger.error(f"Error with OpenAI provider: {e}")
+                    self.logger.error(f"Error with custom provider: {e}")
                     raise
-            elif self.provider_type == 'custom':
+                    
+            # For Anthropic provider
                         self.logger.info(f"Using custom provider with endpoint: {self.provider.endpoint}")
                         try:
                             import openai
