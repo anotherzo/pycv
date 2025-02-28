@@ -52,7 +52,9 @@ class CustomProvider(LLMProvider):
         self.base_url = base_url
         # Make sure the endpoint starts with /v1 as shown in the server logs
         self.endpoint = os.getenv('LLM_ENDPOINT', '/v1/chat/completions')
-    
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.info(f"using {self.endpoint}")
+        
     def get_client(self):
         import openai
         # The OpenAI client will automatically append the endpoint to the base_url
