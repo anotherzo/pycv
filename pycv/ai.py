@@ -363,51 +363,9 @@ class Ai:
                     messages=messages
                 )
                 
-                # Extract token usage from Anthropic response
-                # Check different possible locations for token usage information
-                usage_found = False
+                # This section is now handled in the Anthropic provider block above
                 
-                # Check if usage is in _raw_response
-                if hasattr(response, '_raw_response') and response._raw_response is not None:
-                    raw_resp = response._raw_response
-                    if hasattr(raw_resp, 'usage'):
-                        usage = raw_resp.usage
-                        if hasattr(usage, 'input_tokens') and hasattr(usage, 'output_tokens'):
-                            input_tokens = usage.input_tokens
-                            output_tokens = usage.output_tokens
-                            usage_found = True
-                    # Try dictionary access if it's a dict-like object
-                    elif isinstance(raw_resp, dict) and 'usage' in raw_resp:
-                        usage = raw_resp['usage']
-                        if usage is not None and 'input_tokens' in usage and 'output_tokens' in usage:
-                            input_tokens = usage['input_tokens']
-                            output_tokens = usage['output_tokens']
-                            usage_found = True
-                
-                # If we still don't have usage, estimate based on prompt and response length
-                if not usage_found:
-                    # Estimate token count (rough approximation: 1 token ≈ 4 characters)
-                    input_tokens = len(prompt) // 4
-                    # For output tokens, we need to estimate from the response
-                    # Convert response to string representation and estimate
-                    response_str = str(response)
-                    output_tokens = len(response_str) // 4
-                    
-                    self.logger.info(f"Token usage not found in response, using estimated counts")
-                
-                # Track the cost
-                if self.cost_tracker:
-                    self.cost_tracker.track_call(
-                        provider=self.provider_type,
-                        model=self.model,
-                        input_tokens=input_tokens,
-                        output_tokens=output_tokens,
-                        operation=operation
-                    )
-                
-                self.logger.info(f"... answer received. Used {input_tokens} input and {output_tokens} output tokens.")
-                    
-                return response
+                # This section is now handled in the Anthropic provider block above
                 
         except Exception as e:
             self.logger.error(f"Error getting response from LLM: {e}")
