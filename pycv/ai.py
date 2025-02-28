@@ -72,7 +72,13 @@ class Ai:
                     statements=self.get_json_for(statements),
                     job=joblink
         )
-        return self.ask(prompt, Iterable[JobDescription])
+        job_descriptions = self.ask(prompt, Iterable[JobDescription])
+        
+        # Escape special LaTeX characters in descriptions
+        for job_desc in job_descriptions:
+            job_desc.description = job_desc.description.replace('_', '\\_').replace('%', '\\%').replace('&', '\\&').replace('#', '\\#').replace('$', '\\$').replace('{', '\\{').replace('}', '\\}')
+        
+        return job_descriptions
 
     def get_summary(self, skills:list, statements:list, joblink:str) -> Summary:
         self.logger.info("Getting resume summary...")
