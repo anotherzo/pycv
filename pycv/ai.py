@@ -51,7 +51,7 @@ class CustomProvider(LLMProvider):
         self.api_key = api_key
         self.base_url = base_url
         # Make sure the endpoint starts with /v1 as shown in the server logs
-        self.endpoint = os.getenv('LLM_ENDPOINT', '/v1/completions')
+        self.endpoint = os.getenv('LLM_ENDPOINT', '/v1/chat/completions')
     
     def get_client(self):
         import openai
@@ -163,7 +163,7 @@ class Ai:
                             client = self.provider.get_client()
                             
                             # Determine which endpoint to use based on the server's capabilities
-                            if self.provider.endpoint.endswith('/completions'):
+                            if '/chat/' not in self.provider.endpoint:
                                 # Use completions endpoint without response_model
                                 self.logger.debug(f"Using completions endpoint: {self.provider.endpoint}")
                                 try:
