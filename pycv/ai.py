@@ -5,33 +5,100 @@ import logging
 import instructor
 from anthropic import Anthropic
 from dotenv import load_dotenv
-from typing import Iterable
+from typing import Iterable, Type, Dict, Any, Optional
 from pydantic import BaseModel, Field
+from abc import ABC, abstractmethod
 from .baseclasses import CarStory, Cvitem, JobDescription, Summary, Letterinfo
 
 load_dotenv()  # Load environment variables from .env file
 
+class LLMProvider(ABC):
+    """Base class for LLM providers"""
+    
+    @abstractmethod
+    def get_client(self):
+        """Return the client for this provider"""
+        pass
+    
+    @abstractmethod
+    def create_completion(self, client, model: str, max_tokens: int, response_model: Type[BaseModel], messages: list) -> Any:
+        """Create a completion using the provider's API"""
+        pass
+
+class AnthropicProvider(LLMProvider):
+    """Provider for Anthropic Claude API"""
+    
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+    
+    def get_client(self):
+        return instructor.from_anthropic(Anthropic(api_key=self.api_key), mode=instructor.Mode.ANTHROPIC_JSON)
+    
+    def create_completion(self, client, model: str, max_tokens: int, response_model: Type[BaseModel], messages: list) -> Any:
+        return client.chat.completions.create(
+            model=model,
+            max_tokens=max_tokens,
+            response_model=response_model,
+            messages=messages
+        )
+
+class OpenAIProvider(LLMProvider):
+    """Provider for OpenAI and compatible APIs"""
+    
+    def __init__(self, api_key: str, base_url: Optional[str] = None):
+        self.api_key = api_key
+        self.base_url = base_url
+    
+    def get_client(self):
+        import openai
+        client = openai.OpenAI(api_key=self.api_key)
+        if self.base_url:
+            client.base_url = self.base_url
+        return instructor.from_openai(client)
+    
+    def create_completion(self, client, model: str, max_tokens: int, response_model: Type[BaseModel], messages: list) -> Any:
+        return client.chat.completions.create(
+            model=model,
+            max_tokens=max_tokens,
+            response_model=response_model,
+            messages=messages
+        )
+
 class Ai:
     def __init__(self):
-        self.model = "claude-3-5-sonnet-20240620"
-        self.max_tokens = 4096
-        self.api_key = os.getenv('ANTHROPIC_API_KEY')
-        if not self.api_key:
-            raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
+        self.provider_type = os.getenv('LLM_PROVIDER', 'anthropic').lower()
+        self.model = os.getenv('LLM_MODEL', 'claude-3-5-sonnet-20240620')
+        self.max_tokens = int(os.getenv('LLM_MAX_TOKENS', '4096'))
+        self.base_url = os.getenv('LLM_BASE_URL')  # For local LLMs
         self.logger = logging.getLogger(self.__class__.__name__)
+        
+        # Initialize the appropriate provider
+        if self.provider_type == 'anthropic':
+            api_key = os.getenv('ANTHROPIC_API_KEY')
+            if not api_key:
+                raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
+            self.provider = AnthropicProvider(api_key)
+        elif self.provider_type == 'openai':
+            api_key = os.getenv('OPENAI_API_KEY')
+            if not api_key:
+                raise ValueError("OPENAI_API_KEY environment variable is not set")
+            self.provider = OpenAIProvider(api_key, self.base_url)
+        else:
+            raise ValueError(f"Unsupported LLM provider: {self.provider_type}")
 
-    def ask(self, prompt:str, respmodel):
-        client = instructor.from_anthropic(Anthropic(), mode=instructor.Mode.ANTHROPIC_JSON)
-        self.logger.info("Asking AI for help... ")
-        res = client.chat.completions.create(
-                model=self.model,
-                max_tokens=self.max_tokens,
-                response_model=respmodel,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    }
+    def ask(self, prompt: str, respmodel):
+        client = self.provider.get_client()
+        self.logger.info(f"Asking {self.provider_type} LLM for help...")
+        res = self.provider.create_completion(
+            client=client,
+            model=self.model,
+            max_tokens=self.max_tokens,
+            response_model=respmodel,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
             ],
         )
         self.logger.info("... answer received.")

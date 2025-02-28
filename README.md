@@ -26,6 +26,24 @@ A Python tool that generates a professional CV/resume in PDF format using LaTeX 
    ```bash
    export ANTHROPIC_API_KEY='your-api-key'
    ```
+3. Configure your LLM provider:
+   ```bash
+   # For Anthropic Claude (default)
+   export ANTHROPIC_API_KEY='your-api-key'
+   export LLM_PROVIDER='anthropic'
+   export LLM_MODEL='claude-3-5-sonnet-20240620'
+   
+   # For OpenAI
+   export OPENAI_API_KEY='your-api-key'
+   export LLM_PROVIDER='openai'
+   export LLM_MODEL='gpt-4'
+   
+   # For local LLM with OpenAI-compatible API
+   export OPENAI_API_KEY='your-api-key-or-empty-string'
+   export LLM_PROVIDER='openai'
+   export LLM_MODEL='your-local-model-name'
+   export LLM_BASE_URL='http://localhost:1234/v1'  # Your local LLM API endpoint
+   ```
 
 ## Usage
 
@@ -62,7 +80,14 @@ When creating these data files, you might want to make sure you do not include a
 Yes, because that's what fits my needs. Feel free to change the template in `template/` or the prompts in `pycv/*-prompt.txt` to your own taste.
 
 ### Using different AI models
-PyCv uses  [`instructor`](https://python.useinstructor.com) in `ai.py`. If you want to address a different model (the code defaults to Claude), you will have to adapt `client = ...` and the parametrization of the model in the constructor and in `ask()`.
+PyCv now supports multiple LLM providers through environment variables:
+
+- `LLM_PROVIDER`: Set to 'anthropic' (default) or 'openai' (which works with OpenAI-compatible APIs)
+- `LLM_MODEL`: The model name to use (e.g., 'claude-3-5-sonnet-20240620' for Anthropic or 'gpt-4' for OpenAI)
+- `LLM_MAX_TOKENS`: Maximum tokens in the response (default: 4096)
+- `LLM_BASE_URL`: Base URL for the API (useful for local LLMs with OpenAI-compatible APIs)
+
+For local LLMs, you can use any model that provides an OpenAI-compatible API, such as LM Studio, Ollama, or LocalAI.
 
 ### Using different prompts and different output languages
 All AI prompts are save in `pycv/*-prompt.txt`. Feel free to adapt those to your needs. The current version is in German; you might want to change that.
