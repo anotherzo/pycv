@@ -155,20 +155,34 @@ class Ai:
                     self.logger.error(f"Error with OpenAI/custom provider: {e}")
                     # If we're using a custom provider, try a more direct approach as fallback
                     if self.provider_type == 'custom':
-                        self.logger.info("Attempting fallback for custom provider...")
+                        self.logger.info("Using custom provider with endpoint: " + self.provider.endpoint)
                         try:
                             import openai
-                            client = openai.OpenAI(api_key=self.api_key, base_url=self.base_url)
+                            client = self.provider.get_client()
                             
-                            # Try a simpler request without instructor
-                            response = client.chat.completions.create(
-                                model=self.model,
-                                max_tokens=self.max_tokens,
-                                messages=messages
-                            )
+                            # Determine which endpoint to use based on the server's capabilities
+                            if self.provider.endpoint == '/v1/completions':
+                                # Use completions endpoint
+                                response = client.completions.create(
+                                    model=self.model,
+                                    max_tokens=self.max_tokens,
+                                    prompt=prompt,  # Use prompt directly
+                                )
+                                
+                                # Extract the content from the response
+                                content = response.choices[0].text
+                            else:
+                                # Use chat completions endpoint
+                                response = client.chat.completions.create(
+                                    model=self.model,
+                                    max_tokens=self.max_tokens,
+                                    messages=messages
+                                )
+                                
+                                # Extract the content from the response
+                                content = response.choices[0].message.content
                             
-                            # Extract the content from the response
-                            content = response.choices[0].message.content
+                            self.logger.debug(f"Raw response content: {content}")
                             
                             # Try to parse the content as JSON
                             try:
@@ -184,11 +198,24 @@ class Ai:
                                         return [item_type.model_validate(item) for item in parsed_content]
                                     else:
                                         return [item_type.model_validate(parsed_content)]
-                            except (json.JSONDecodeError, ValueError) as json_err:
+                            except json.JSONDecodeError as json_err:
                                 self.logger.error(f"Failed to parse response as JSON: {json_err}")
-                                raise
+                                self.logger.debug(f"Non-JSON response: {content}")
+                                
+                                # If we can't parse as JSON, try to create a simple instance with the text
+                                if issubclass(respmodel, Summary):
+                                    return Summary(summary=content)
+                                elif issubclass(respmodel, Letterinfo):
+                                    return Letterinfo(
+                                        recipient=["Company"],
+                                        subject="Application",
+                                        opening="Dear Hiring Manager,",
+                                        content=content
+                                    )
+                                else:
+                                    raise
                         except Exception as fallback_err:
-                            self.logger.error(f"Fallback approach failed: {fallback_err}")
+                            self.logger.error(f"Error with custom provider: {fallback_err}")
                             raise
                     else:
                         raise
