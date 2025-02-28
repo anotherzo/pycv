@@ -6,7 +6,7 @@ import jinja2
 from pathlib import Path
 import instructor
 from anthropic import Anthropic
-from typing import List, Dict, Optional, Iterable
+from typing import List, Dict, Optional, Iterable, Any
 from pydantic import BaseModel, Field
 from .datastore import YamlStore
 from .baseclasses import CarStory, Cvitem, Language
