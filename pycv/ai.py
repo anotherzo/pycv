@@ -503,8 +503,8 @@ class StubAi:
 
     def get_letterinfo(self, statements:list, carstories:list, joblink:str) -> Letterinfo:
         return Letterinfo(
-                recipient=["ABC Company","Somestreet 42 Happytown"],
-                subject="Application for the position of Head Of Everything",
-                opening="Friends, romans, countrymen, lend me your ear",
-                content="I really really want to get this thing",
+                recipient=["ABC Company", "Somestreet 42 Happytown"],
+                subject="Application for the position of Software Engineer",
+                opening="Dear Hiring Manager,",
+                content="I am writing to express my interest in the Software Engineer position at your company. With my experience in software development and problem-solving skills, I believe I would be a valuable addition to your team. I look forward to discussing how my background aligns with your needs.",
         )
