@@ -127,7 +127,13 @@ class Ai:
                     
                     # Try to get token usage if available
                     try:
-                        if hasattr(response, '_raw_response') and response._raw_response is not None:
+                        # First check if response has a usage attribute directly
+                        if hasattr(response, 'usage'):
+                            usage = response.usage
+                            input_tokens = getattr(usage, 'prompt_tokens', 0)
+                            output_tokens = getattr(usage, 'completion_tokens', 0)
+                        # Then check if it's in _raw_response
+                        elif hasattr(response, '_raw_response') and response._raw_response is not None:
                             raw_resp = response._raw_response
                             if hasattr(raw_resp, 'usage'):
                                 usage = raw_resp.usage
@@ -140,14 +146,31 @@ class Ai:
                                     input_tokens = usage.get('prompt_tokens', 0)
                                     output_tokens = usage.get('completion_tokens', 0)
                         
-                        # If we still don't have token counts, try to access them directly from response
-                        if input_tokens == 0 and output_tokens == 0 and hasattr(response, 'usage'):
-                            usage = response.usage
-                            input_tokens = getattr(usage, 'prompt_tokens', 0)
-                            output_tokens = getattr(usage, 'completion_tokens', 0)
-                            
+                        # If we still don't have token counts, check if it's in the response dict
+                        if input_tokens == 0 and output_tokens == 0 and hasattr(response, '__dict__'):
+                            resp_dict = response.__dict__
+                            if 'usage' in resp_dict and resp_dict['usage'] is not None:
+                                usage = resp_dict['usage']
+                                if isinstance(usage, dict):
+                                    input_tokens = usage.get('prompt_tokens', 0)
+                                    output_tokens = usage.get('completion_tokens', 0)
+                        
+                        # If we still don't have token counts, try to access the response as a dictionary
+                        if input_tokens == 0 and output_tokens == 0:
+                            try:
+                                if isinstance(response, dict) and 'usage' in response:
+                                    usage = response['usage']
+                                    input_tokens = usage.get('prompt_tokens', 0)
+                                    output_tokens = usage.get('completion_tokens', 0)
+                            except (TypeError, AttributeError):
+                                pass
+                                
                         # If we still don't have token counts, estimate them
                         if input_tokens == 0 and output_tokens == 0:
+                            # Log the response structure to help debug
+                            self.logger.debug(f"Response type: {type(response)}")
+                            self.logger.debug(f"Response attributes: {dir(response) if hasattr(response, '__dir__') else 'No dir available'}")
+                            
                             # Estimate token count (rough approximation: 1 token ≈ 4 characters)
                             input_tokens = len(prompt) // 4
                             # For output tokens, we need to estimate from the response
@@ -326,7 +349,13 @@ class Ai:
                         
                     # Try to get token usage if available
                     try:
-                        if hasattr(response, '_raw_response') and response._raw_response is not None:
+                        # First check if response has a usage attribute directly
+                        if hasattr(response, 'usage'):
+                            usage = response.usage
+                            input_tokens = getattr(usage, 'prompt_tokens', 0)
+                            output_tokens = getattr(usage, 'completion_tokens', 0)
+                        # Then check if it's in _raw_response
+                        elif hasattr(response, '_raw_response') and response._raw_response is not None:
                             raw_resp = response._raw_response
                             if hasattr(raw_resp, 'usage'):
                                 usage = raw_resp.usage
@@ -339,14 +368,31 @@ class Ai:
                                     input_tokens = usage.get('prompt_tokens', 0)
                                     output_tokens = usage.get('completion_tokens', 0)
                         
-                        # If we still don't have token counts, try to access them directly from response
-                        if input_tokens == 0 and output_tokens == 0 and hasattr(response, 'usage'):
-                            usage = response.usage
-                            input_tokens = getattr(usage, 'prompt_tokens', 0)
-                            output_tokens = getattr(usage, 'completion_tokens', 0)
-                            
+                        # If we still don't have token counts, check if it's in the response dict
+                        if input_tokens == 0 and output_tokens == 0 and hasattr(response, '__dict__'):
+                            resp_dict = response.__dict__
+                            if 'usage' in resp_dict and resp_dict['usage'] is not None:
+                                usage = resp_dict['usage']
+                                if isinstance(usage, dict):
+                                    input_tokens = usage.get('prompt_tokens', 0)
+                                    output_tokens = usage.get('completion_tokens', 0)
+                        
+                        # If we still don't have token counts, try to access the response as a dictionary
+                        if input_tokens == 0 and output_tokens == 0:
+                            try:
+                                if isinstance(response, dict) and 'usage' in response:
+                                    usage = response['usage']
+                                    input_tokens = usage.get('prompt_tokens', 0)
+                                    output_tokens = usage.get('completion_tokens', 0)
+                            except (TypeError, AttributeError):
+                                pass
+                                
                         # If we still don't have token counts, estimate them
                         if input_tokens == 0 and output_tokens == 0:
+                            # Log the response structure to help debug
+                            self.logger.debug(f"Response type: {type(response)}")
+                            self.logger.debug(f"Response attributes: {dir(response) if hasattr(response, '__dir__') else 'No dir available'}")
+                            
                             # Estimate token count (rough approximation: 1 token ≈ 4 characters)
                             input_tokens = len(prompt) // 4
                             # For output tokens, we need to estimate from the response
@@ -390,41 +436,72 @@ class Ai:
                     
                     # Extract token usage from Anthropic response
                     # Check different possible locations for token usage information
-                    usage_found = False
                     input_tokens = 0
                     output_tokens = 0
                     
-                    # Check if usage is in _raw_response
-                    if hasattr(response, '_raw_response') and response._raw_response is not None:
-                        raw_resp = response._raw_response
-                        if hasattr(raw_resp, 'usage'):
-                            usage = raw_resp.usage
+                    # Try to get token usage if available
+                    try:
+                        # First check if response has a usage attribute directly
+                        if hasattr(response, 'usage'):
+                            usage = response.usage
                             if hasattr(usage, 'input_tokens') and hasattr(usage, 'output_tokens'):
                                 input_tokens = usage.input_tokens
                                 output_tokens = usage.output_tokens
-                                usage_found = True
-                        # Try dictionary access if it's a dict-like object
-                        elif isinstance(raw_resp, dict) and 'usage' in raw_resp:
-                            usage = raw_resp['usage']
-                            if usage is not None and 'input_tokens' in usage and 'output_tokens' in usage:
+                            elif isinstance(usage, dict) and 'input_tokens' in usage and 'output_tokens' in usage:
                                 input_tokens = usage['input_tokens']
                                 output_tokens = usage['output_tokens']
-                                usage_found = True
+                        
+                        # Then check if it's in _raw_response
+                        elif hasattr(response, '_raw_response') and response._raw_response is not None:
+                            raw_resp = response._raw_response
+                            if hasattr(raw_resp, 'usage'):
+                                usage = raw_resp.usage
+                                if hasattr(usage, 'input_tokens') and hasattr(usage, 'output_tokens'):
+                                    input_tokens = usage.input_tokens
+                                    output_tokens = usage.output_tokens
+                            # Try dictionary access if it's a dict-like object
+                            elif isinstance(raw_resp, dict) and 'usage' in raw_resp:
+                                usage = raw_resp['usage']
+                                if usage is not None and 'input_tokens' in usage and 'output_tokens' in usage:
+                                    input_tokens = usage['input_tokens']
+                                    output_tokens = usage['output_tokens']
+                        
+                        # If we still don't have token counts, check if it's in the response dict
+                        if input_tokens == 0 and output_tokens == 0 and hasattr(response, '__dict__'):
+                            resp_dict = response.__dict__
+                            if 'usage' in resp_dict and resp_dict['usage'] is not None:
+                                usage = resp_dict['usage']
+                                if isinstance(usage, dict):
+                                    input_tokens = usage.get('input_tokens', 0)
+                                    output_tokens = usage.get('output_tokens', 0)
+                        
+                        # If we still don't have token counts, try to access the response as a dictionary
+                        if input_tokens == 0 and output_tokens == 0:
+                            try:
+                                if isinstance(response, dict) and 'usage' in response:
+                                    usage = response['usage']
+                                    input_tokens = usage.get('input_tokens', 0)
+                                    output_tokens = usage.get('output_tokens', 0)
+                            except (TypeError, AttributeError):
+                                pass
+                        
+                        # If we still don't have token counts, estimate them
+                        if input_tokens == 0 and output_tokens == 0:
+                            # Log the response structure to help debug
+                            self.logger.debug(f"Response type: {type(response)}")
+                            self.logger.debug(f"Response attributes: {dir(response) if hasattr(response, '__dir__') else 'No dir available'}")
+                            
+                            # Estimate token count (rough approximation: 1 token ≈ 4 characters)
+                            input_tokens = len(prompt) // 4
+                            # For output tokens, we need to estimate from the response
+                            response_str = str(response)
+                            output_tokens = len(response_str) // 4
+                            self.logger.debug("Using estimated token counts")
                     
-                    # Try to access usage directly from response if not found yet
-                    if not usage_found and hasattr(response, 'usage'):
-                        usage = response.usage
-                        if hasattr(usage, 'input_tokens') and hasattr(usage, 'output_tokens'):
-                            input_tokens = usage.input_tokens
-                            output_tokens = usage.output_tokens
-                            usage_found = True
-                    
-                    # If we still don't have usage, estimate based on prompt and response length
-                    if not usage_found:
-                        # Estimate token count (rough approximation: 1 token ≈ 4 characters)
+                    except (AttributeError, TypeError) as e:
+                        self.logger.warning(f"Could not extract token usage: {e}")
+                        # Estimate token count
                         input_tokens = len(prompt) // 4
-                        # For output tokens, we need to estimate from the response
-                        # Convert response to string representation and estimate
                         response_str = str(response)
                         output_tokens = len(response_str) // 4
                         
