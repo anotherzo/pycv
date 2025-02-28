@@ -346,22 +346,86 @@ class Ai:
                     
             # For Anthropic provider
             elif self.provider_type == 'anthropic':
-                response = client.chat.completions.create(
-                    model=self.model,
-                    max_tokens=self.max_tokens,
-                    response_model=respmodel,
-                    messages=messages
-                )
-                            
-                
-            # For Anthropic provider
-            elif self.provider_type == 'anthropic':
-                response = client.chat.completions.create(
-                    model=self.model,
-                    max_tokens=self.max_tokens,
-                    response_model=respmodel,
-                    messages=messages
-                )
+                try:
+                    response = client.chat.completions.create(
+                        model=self.model,
+                        max_tokens=self.max_tokens,
+                        response_model=respmodel,
+                        messages=messages
+                    )
+                    
+                    # Extract token usage from Anthropic response
+                    # Check different possible locations for token usage information
+                    usage_found = False
+                    input_tokens = 0
+                    output_tokens = 0
+                    
+                    # Check if usage is in _raw_response
+                    if hasattr(response, '_raw_response') and response._raw_response is not None:
+                        raw_resp = response._raw_response
+                        if hasattr(raw_resp, 'usage'):
+                            usage = raw_resp.usage
+                            if hasattr(usage, 'input_tokens') and hasattr(usage, 'output_tokens'):
+                                input_tokens = usage.input_tokens
+                                output_tokens = usage.output_tokens
+                                usage_found = True
+                        # Try dictionary access if it's a dict-like object
+                        elif isinstance(raw_resp, dict) and 'usage' in raw_resp:
+                            usage = raw_resp['usage']
+                            if usage is not None and 'input_tokens' in usage and 'output_tokens' in usage:
+                                input_tokens = usage['input_tokens']
+                                output_tokens = usage['output_tokens']
+                                usage_found = True
+                    
+                    # If we still don't have usage, estimate based on prompt and response length
+                    if not usage_found:
+                        # Estimate token count (rough approximation: 1 token ≈ 4 characters)
+                        input_tokens = len(prompt) // 4
+                        # For output tokens, we need to estimate from the response
+                        # Convert response to string representation and estimate
+                        response_str = str(response)
+                        output_tokens = len(response_str) // 4
+                        
+                        self.logger.info(f"Token usage not found in response, using estimated counts")
+                    
+                    # Track the cost
+                    if self.cost_tracker:
+                        self.cost_tracker.track_call(
+                            provider=self.provider_type,
+                            model=self.model,
+                            input_tokens=input_tokens,
+                            output_tokens=output_tokens,
+                            operation=operation
+                        )
+                    
+                    self.logger.info(f"... answer received. Used {input_tokens} input and {output_tokens} output tokens.")
+                        
+                    return response
+                except Exception as e:
+                    self.logger.error(f"Error with Anthropic provider: {e}")
+                    # Create a fallback response based on the model type
+                    if issubclass(respmodel, Summary):
+                        return Summary(summary="Failed to generate summary due to API error.")
+                    elif issubclass(respmodel, Letterinfo):
+                        return Letterinfo(
+                            recipient=["Company"],
+                            subject="Application",
+                            opening="Dear Hiring Manager,",
+                            content="Failed to generate content due to API error."
+                        )
+                    elif hasattr(respmodel, '__origin__') and respmodel.__origin__ is Iterable:
+                        # For Iterable[JobDescription] or similar
+                        item_type = respmodel.__args__[0]
+                        if issubclass(item_type, JobDescription):
+                            return [JobDescription(job=1, description="Failed to generate description due to API error.")]
+                        elif issubclass(item_type, Cvitem):
+                            return [Cvitem(job=1, item="Failed to generate item due to API error.")]
+                        else:
+                            # Create a stub response for other iterable types
+                            return [item_type()]
+                    else:
+                        # Last resort: return a stub instance
+                        return respmodel()
                 
                 # This section is now handled in the Anthropic provider block above
                 
