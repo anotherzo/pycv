@@ -135,6 +135,16 @@ class PyCv:
         try:
             jobdescriptions = self.ai.get_job_summaries(self.datastore.jobs, self.datastore.statements, self.joblink)
             jobitems = self.ai.get_experience(self.datastore.jobs, self.datastore.carstories, jobdescriptions, self.joblink)
+            
+            # Validate that we got valid iterables back
+            if jobdescriptions is None:
+                self.logger.warning("Received None for job descriptions, using empty list instead")
+                jobdescriptions = []
+            
+            if jobitems is None:
+                self.logger.warning("Received None for job items, using empty list instead")
+                jobitems = []
+                
         except Exception as e:
             self.logger.warning(f"Error getting AI-generated content: {e}")
             self.logger.warning("Using stub data instead.")
@@ -142,6 +152,30 @@ class PyCv:
             stub_ai = StubAi()
             jobdescriptions = stub_ai.get_job_summaries(self.datastore.jobs, self.datastore.statements, self.joblink)
             jobitems = stub_ai.get_experience(self.datastore.jobs, self.datastore.carstories, jobdescriptions, self.joblink)
+            
+            # Double-check that stub data is valid
+            if jobdescriptions is None:
+                self.logger.warning("Stub AI returned None for job descriptions, using empty list instead")
+                jobdescriptions = []
+            
+            if jobitems is None:
+                self.logger.warning("Stub AI returned None for job items, using empty list instead")
+                jobitems = []
+        
+        # Ensure we have lists to work with
+        if not isinstance(jobdescriptions, list):
+            try:
+                jobdescriptions = list(jobdescriptions)
+            except (TypeError, ValueError):
+                self.logger.warning("Could not convert job descriptions to list, using empty list instead")
+                jobdescriptions = []
+                
+        if not isinstance(jobitems, list):
+            try:
+                jobitems = list(jobitems)
+            except (TypeError, ValueError):
+                self.logger.warning("Could not convert job items to list, using empty list instead")
+                jobitems = []
         
         for job in self.datastore.jobs:
             jds = [jd for jd in jobdescriptions if jd.job == job.job]
