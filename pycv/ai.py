@@ -65,7 +65,16 @@ class Ai:
     def __init__(self, cost_tracker: Optional[CostTracker] = None):
         self.provider_type = os.getenv('LLM_PROVIDER', 'anthropic').lower()
         self.model = os.getenv('LLM_MODEL', 'claude-3-5-sonnet-20241022')
-        self.max_tokens = int(os.getenv('LLM_MAX_TOKENS', '4096'))
+        
+        # Get max_tokens with better error handling
+        max_tokens_str = os.getenv('LLM_MAX_TOKENS', '4096')
+        try:
+            self.max_tokens = int(max_tokens_str) if max_tokens_str else 4096
+        except ValueError:
+            self.logger = logging.getLogger(self.__class__.__name__)
+            self.logger.warning(f"Invalid value for LLM_MAX_TOKENS: '{max_tokens_str}'. Using default of 4096.")
+            self.max_tokens = 4096
+            
         self.base_url = os.getenv('LLM_BASE_URL')  # For local LLMs
         self.logger = logging.getLogger(self.__class__.__name__)
         self.cost_tracker = cost_tracker or CostTracker()
