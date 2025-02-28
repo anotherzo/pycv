@@ -99,48 +99,98 @@ class Ai:
             
             # For OpenAI provider or custom provider
             if self.provider_type in ['openai', 'custom']:
-                response = client.chat.completions.create(
-                    model=self.model,
-                    max_tokens=self.max_tokens,
-                    response_model=respmodel,
-                    messages=messages
-                )
-                
-                # Extract token usage from OpenAI response
-                input_tokens = 0
-                output_tokens = 0
-                
-                # Try to get token usage if available
                 try:
-                    if hasattr(response, '_raw_response') and hasattr(response._raw_response, 'usage'):
-                        usage = response._raw_response.usage
-                        input_tokens = getattr(usage, 'prompt_tokens', 0)
-                        output_tokens = getattr(usage, 'completion_tokens', 0)
-                    # For custom servers that might return different structures
-                    elif hasattr(response, '_raw_response') and isinstance(response._raw_response, dict):
-                        usage = response._raw_response.get('usage', {})
-                        input_tokens = usage.get('prompt_tokens', 0)
-                        output_tokens = usage.get('completion_tokens', 0)
-                except (AttributeError, TypeError) as e:
-                    self.logger.warning(f"Could not extract token usage: {e}")
-                    # Estimate token count
-                    input_tokens = len(prompt) // 4
-                    response_str = str(response)
-                    output_tokens = len(response_str) // 4
-                
-                # Track the cost
-                if self.cost_tracker:
-                    self.cost_tracker.track_call(
-                        provider=self.provider_type,
+                    response = client.chat.completions.create(
                         model=self.model,
-                        input_tokens=input_tokens,
-                        output_tokens=output_tokens,
-                        operation=operation
+                        max_tokens=self.max_tokens,
+                        response_model=respmodel,
+                        messages=messages
                     )
-                
-                self.logger.info(f"... answer received. Used {input_tokens} input and {output_tokens} output tokens.")
                     
-                return response
+                    # Debug logging for custom providers
+                    if self.provider_type == 'custom':
+                        self.logger.debug(f"Raw response from custom provider: {response}")
+                        if hasattr(response, '_raw_response'):
+                            self.logger.debug(f"_raw_response attribute: {response._raw_response}")
+                    
+                    # Extract token usage from OpenAI response
+                    input_tokens = 0
+                    output_tokens = 0
+                    
+                    # Try to get token usage if available
+                    try:
+                        if hasattr(response, '_raw_response') and response._raw_response is not None:
+                            if hasattr(response._raw_response, 'usage'):
+                                usage = response._raw_response.usage
+                                input_tokens = getattr(usage, 'prompt_tokens', 0)
+                                output_tokens = getattr(usage, 'completion_tokens', 0)
+                            # For custom servers that might return different structures
+                            elif isinstance(response._raw_response, dict):
+                                usage = response._raw_response.get('usage', {})
+                                if usage is not None:
+                                    input_tokens = usage.get('prompt_tokens', 0)
+                                    output_tokens = usage.get('completion_tokens', 0)
+                    except (AttributeError, TypeError) as e:
+                        self.logger.warning(f"Could not extract token usage: {e}")
+                        # Estimate token count
+                        input_tokens = len(prompt) // 4
+                        response_str = str(response)
+                        output_tokens = len(response_str) // 4
+                    
+                    # Track the cost
+                    if self.cost_tracker:
+                        self.cost_tracker.track_call(
+                            provider=self.provider_type,
+                            model=self.model,
+                            input_tokens=input_tokens,
+                            output_tokens=output_tokens,
+                            operation=operation
+                        )
+                    
+                    self.logger.info(f"... answer received. Used {input_tokens} input and {output_tokens} output tokens.")
+                        
+                    return response
+                except Exception as e:
+                    self.logger.error(f"Error with OpenAI/custom provider: {e}")
+                    # If we're using a custom provider, try a more direct approach as fallback
+                    if self.provider_type == 'custom':
+                        self.logger.info("Attempting fallback for custom provider...")
+                        try:
+                            import openai
+                            client = openai.OpenAI(api_key=self.api_key, base_url=self.base_url)
+                            
+                            # Try a simpler request without instructor
+                            response = client.chat.completions.create(
+                                model=self.model,
+                                max_tokens=self.max_tokens,
+                                messages=messages
+                            )
+                            
+                            # Extract the content from the response
+                            content = response.choices[0].message.content
+                            
+                            # Try to parse the content as JSON
+                            try:
+                                parsed_content = json.loads(content)
+                                # Create an instance of the response model
+                                if issubclass(respmodel, BaseModel):
+                                    result = respmodel.model_validate(parsed_content)
+                                    return result
+                                elif hasattr(respmodel, '__origin__') and respmodel.__origin__ is Iterable:
+                                    # Handle Iterable[SomeModel]
+                                    item_type = respmodel.__args__[0]
+                                    if isinstance(parsed_content, list):
+                                        return [item_type.model_validate(item) for item in parsed_content]
+                                    else:
+                                        return [item_type.model_validate(parsed_content)]
+                            except (json.JSONDecodeError, ValueError) as json_err:
+                                self.logger.error(f"Failed to parse response as JSON: {json_err}")
+                                raise
+                        except Exception as fallback_err:
+                            self.logger.error(f"Fallback approach failed: {fallback_err}")
+                            raise
+                    else:
+                        raise
                 
             # For Anthropic provider
             elif self.provider_type == 'anthropic':
@@ -156,7 +206,7 @@ class Ai:
                 usage_found = False
                 
                 # Check if usage is in _raw_response
-                if hasattr(response, '_raw_response'):
+                if hasattr(response, '_raw_response') and response._raw_response is not None:
                     raw_resp = response._raw_response
                     if hasattr(raw_resp, 'usage'):
                         usage = raw_resp.usage
@@ -167,7 +217,7 @@ class Ai:
                     # Try dictionary access if it's a dict-like object
                     elif isinstance(raw_resp, dict) and 'usage' in raw_resp:
                         usage = raw_resp['usage']
-                        if 'input_tokens' in usage and 'output_tokens' in usage:
+                        if usage is not None and 'input_tokens' in usage and 'output_tokens' in usage:
                             input_tokens = usage['input_tokens']
                             output_tokens = usage['output_tokens']
                             usage_found = True
