@@ -23,19 +23,28 @@ def main(joblink: str, projectname: str, compile: bool, verbose: bool, datadir: 
     # Initialize PyCv with datadir and cost tracking option
     cv = PyCv(joblink, projectname, datadir, track_costs=track_costs)
 
-    # Generate and save LaTeX
-    cv.save_latex()
+    try:
+        # Generate and save LaTeX
+        cv.save_latex()
 
-    if compile:
-        logging.info(f"Compiling LaTeX files for {projectname}...")
-        # Redirect output to DEVNULL to hide it
-        subprocess.run(['xelatex', 'resume.' + projectname + '.tex'], 
-                      stdout=subprocess.DEVNULL, 
-                      stderr=subprocess.DEVNULL)
-        subprocess.run(['xelatex', 'coverletter.' + projectname + '.tex'], 
-                      stdout=subprocess.DEVNULL, 
-                      stderr=subprocess.DEVNULL)
-        logging.info("LaTeX compilation completed.")
+        if compile:
+            logging.info(f"Compiling LaTeX files for {projectname}...")
+            # Redirect output to DEVNULL to hide it
+            subprocess.run(['xelatex', 'resume.' + projectname + '.tex'], 
+                          stdout=subprocess.DEVNULL, 
+                          stderr=subprocess.DEVNULL)
+            
+            # Only try to compile the cover letter if it was successfully generated
+            if os.path.exists('coverletter.' + projectname + '.tex'):
+                subprocess.run(['xelatex', 'coverletter.' + projectname + '.tex'], 
+                              stdout=subprocess.DEVNULL, 
+                              stderr=subprocess.DEVNULL)
+                logging.info("LaTeX compilation completed.")
+            else:
+                logging.warning("Cover letter was not generated, skipping compilation.")
+    except Exception as e:
+        logging.error(f"Error during processing: {str(e)}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
