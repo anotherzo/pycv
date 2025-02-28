@@ -123,7 +123,34 @@ class Ai:
                         max_tokens=self.max_tokens,
                         messages=messages
                     )
-                    
+                        
+                    # Check if response is None or doesn't have the expected structure
+                    if not response or not hasattr(response, 'choices') or not response.choices:
+                        self.logger.error("Received invalid response from custom provider")
+                        # Create a fallback response based on the model type
+                        if issubclass(respmodel, Summary):
+                            return Summary(summary="Failed to generate summary due to API error.")
+                        elif issubclass(respmodel, Letterinfo):
+                            return Letterinfo(
+                                recipient=["Company"],
+                                subject="Application",
+                                opening="Dear Hiring Manager,",
+                                content="Failed to generate content due to API error."
+                            )
+                        elif hasattr(respmodel, '__origin__') and respmodel.__origin__ is Iterable:
+                            # For Iterable[JobDescription] or similar
+                            item_type = respmodel.__args__[0]
+                            if issubclass(item_type, JobDescription):
+                                return [JobDescription(job=1, description="Failed to generate description due to API error.")]
+                            elif issubclass(item_type, Cvitem):
+                                return [Cvitem(job=1, item="Failed to generate item due to API error.")]
+                            else:
+                                # Create a stub response for other iterable types
+                                return [item_type()]
+                        else:
+                            # Last resort: return a stub instance
+                            return respmodel()
+                        
                     # Extract the content from the response
                     content = response.choices[0].message.content
                     
