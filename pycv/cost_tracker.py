@@ -1,6 +1,9 @@
 import os
 import json
+import csv
 import logging
+import httpx
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional
@@ -55,15 +58,96 @@ class CostTracker:
         self.total_tokens = {'input': 0, 'output': 0}
         self.total_cost = 0.0
     
+    def _fetch_external_pricing(self) -> Optional[Dict[str, Any]]:
+        """
+        Fetch pricing data from the gramener/llmpricing repository.
+        
+        Returns:
+            Dictionary with pricing data organized by provider and model
+        """
+        url = "https://raw.githubusercontent.com/gramener/llmpricing/master/elo.csv"
+        
+        try:
+            with httpx.Client(timeout=10.0) as client:
+                response = client.get(url)
+                response.raise_for_status()
+                
+                # Save to a temporary file and parse as CSV
+                with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+                    temp_file.write(response.text)
+                    temp_file.flush()
+                    temp_path = Path(temp_file.name)
+                
+                # Parse the CSV
+                pricing_data = {
+                    'anthropic': {},
+                    'openai': {},
+                    'google': {},
+                    'mistral': {},
+                    'meta': {},
+                    'other': {}
+                }
+                
+                with open(temp_path, 'r') as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        # Skip rows without pricing info
+                        if not row.get('cpmi') or row['cpmi'] == '':
+                            continue
+                            
+                        try:
+                            model_name = row['model'].strip()
+                            price_per_million = float(row['cpmi'])
+                            
+                            # Determine provider based on model name
+                            if 'claude' in model_name:
+                                provider = 'anthropic'
+                            elif any(prefix in model_name for prefix in ['gpt', 'chatgpt', 'o1']):
+                                provider = 'openai'
+                            elif any(prefix in model_name for prefix in ['gemini', 'gemma']):
+                                provider = 'google'
+                            elif 'mistral' in model_name:
+                                provider = 'mistral'
+                            elif 'llama' in model_name:
+                                provider = 'meta'
+                            else:
+                                provider = 'other'
+                            
+                            # Store pricing with input/output rates
+                            pricing_data[provider][model_name] = {
+                                'input': price_per_million,
+                                'output': price_per_million
+                            }
+                        except (ValueError, KeyError) as e:
+                            self.logger.warning(f"Error parsing pricing row: {e}")
+                            continue
+                
+                # Clean up temp file
+                temp_path.unlink(missing_ok=True)
+                
+                return pricing_data
+        except Exception as e:
+            self.logger.warning(f"Failed to fetch external pricing: {e}")
+            return None
+    
     def _load_custom_pricing(self) -> Optional[Dict[str, Any]]:
-        """Load custom pricing from a JSON file if available."""
+        """Load custom pricing from a JSON file if available or from external source."""
+        # First try local pricing file
         pricing_file = Path('pricing.json')
         if pricing_file.exists():
             try:
                 with open(pricing_file, 'r') as f:
+                    self.logger.info("Using custom pricing from pricing.json")
                     return json.load(f)
             except Exception as e:
-                self.logger.warning(f"Failed to load custom pricing: {e}")
+                self.logger.warning(f"Failed to load custom pricing from file: {e}")
+        
+        # Then try external pricing source
+        external_pricing = self._fetch_external_pricing()
+        if external_pricing:
+            self.logger.info("Using pricing data from gramener/llmpricing")
+            return external_pricing
+        
         return None
     
     def track_call(self, 
@@ -83,16 +167,51 @@ class CostTracker:
             operation: The operation being performed (e.g., 'get_summary')
         """
         # Calculate cost
+        input_cost = 0.0
+        output_cost = 0.0
+        
         try:
-            input_cost = (input_tokens / 1_000_000) * self.pricing[provider][model]['input']
-            output_cost = (output_tokens / 1_000_000) * self.pricing[provider][model]['output']
-            total_cost = input_cost + output_cost
-        except KeyError:
-            self.logger.warning(f"Pricing not found for {provider}/{model}, using estimate")
-            # Use a reasonable default if specific pricing not available
-            input_cost = (input_tokens / 1_000_000) * 5.0  # $5 per million tokens as fallback
-            output_cost = (output_tokens / 1_000_000) * 15.0  # $15 per million tokens as fallback
-            total_cost = input_cost + output_cost
+            # First try exact match in provider's pricing
+            if provider in self.pricing and model in self.pricing[provider]:
+                input_cost = (input_tokens / 1_000_000) * self.pricing[provider][model]['input']
+                output_cost = (output_tokens / 1_000_000) * self.pricing[provider][model]['output']
+            else:
+                # Try to find a similar model name in the pricing data
+                found_match = False
+                
+                if provider in self.pricing:
+                    for priced_model in self.pricing[provider]:
+                        # Check if the model name contains the priced model or vice versa
+                        if priced_model in model or model in priced_model:
+                            input_cost = (input_tokens / 1_000_000) * self.pricing[provider][priced_model]['input']
+                            output_cost = (output_tokens / 1_000_000) * self.pricing[provider][priced_model]['output']
+                            found_match = True
+                            self.logger.debug(f"Using pricing for {priced_model} as a match for {model}")
+                            break
+                
+                # If still no match, check 'other' provider category
+                if not found_match and 'other' in self.pricing:
+                    for priced_model in self.pricing['other']:
+                        if priced_model in model or model in priced_model:
+                            input_cost = (input_tokens / 1_000_000) * self.pricing['other'][priced_model]['input']
+                            output_cost = (output_tokens / 1_000_000) * self.pricing['other'][priced_model]['output']
+                            found_match = True
+                            self.logger.debug(f"Using pricing from 'other' category for {model}")
+                            break
+                
+                # If still no match, use default pricing
+                if not found_match:
+                    self.logger.warning(f"Pricing not found for {provider}/{model}, using estimate")
+                    # Use a reasonable default if specific pricing not available
+                    input_cost = (input_tokens / 1_000_000) * 5.0  # $5 per million tokens as fallback
+                    output_cost = (output_tokens / 1_000_000) * 15.0  # $15 per million tokens as fallback
+        except Exception as e:
+            self.logger.warning(f"Error calculating cost for {provider}/{model}: {e}")
+            # Use a reasonable default if there was an error
+            input_cost = (input_tokens / 1_000_000) * 5.0
+            output_cost = (output_tokens / 1_000_000) * 15.0
+        
+        total_cost = input_cost + output_cost
         
         # Record the call
         call_data = {
