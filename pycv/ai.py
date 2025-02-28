@@ -154,6 +154,16 @@ class Ai:
                     # Extract the content from the response
                     content = response.choices[0].message.content
                     
+                    # Strip out any thinking section enclosed in ``` tags
+                    think_start = content.find("```thinking")
+                    if think_start != -1:
+                        think_end = content.find("```", think_start + 10)
+                        if think_end != -1:
+                            think_end += 3  # Include the closing ```
+                            content = content[:think_start] + content[think_end:]
+                            content = content.strip()
+                            self.logger.debug(f"Removed thinking section from response")
+                    
                     self.logger.debug(f"Raw response content: {content}")
                     
                     # Try to parse the content as JSON
