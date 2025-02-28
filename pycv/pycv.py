@@ -71,6 +71,7 @@ class PyCv:
         template = latex_jinja_env.get_template('coverletter.tex.jinja')
         
         # Try to get letterinfo, fall back to stub if it fails
+        letterinfo = None
         try:
             letterinfo = self.ai.get_letterinfo(
                         self.datastore.statements,
@@ -84,6 +85,11 @@ class PyCv:
                         self.datastore.statements,
                         self.datastore.carstories,
                         self.joblink)
+        
+        # Check if letterinfo is valid before proceeding
+        if letterinfo is None or not hasattr(letterinfo, 'recipient') or not letterinfo.recipient:
+            self.logger.warning("Invalid letterinfo received. Cover letter generation skipped.")
+            return
         
         latex_coverletter = template.render(
                 headers = self.datastore.headers,
