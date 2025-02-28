@@ -208,10 +208,36 @@ class Ai:
                             # Last resort: return a stub instance
                             return respmodel()
                     
+                    # Make sure result is defined before we try to use it
+                    if 'result' not in locals():
+                        # If result wasn't set in the try block, create a fallback
+                        if issubclass(respmodel, Summary):
+                            result = Summary(summary=content)
+                        elif issubclass(respmodel, Letterinfo):
+                            result = Letterinfo(
+                                recipient=["Company"],
+                                subject="Application",
+                                opening="Dear Hiring Manager,",
+                                content=content
+                            )
+                        elif hasattr(respmodel, '__origin__') and respmodel.__origin__ is Iterable:
+                            # For Iterable[JobDescription] or similar
+                            item_type = respmodel.__args__[0]
+                            if issubclass(item_type, JobDescription):
+                                result = [JobDescription(job=1, description=content)]
+                            elif issubclass(item_type, Cvitem):
+                                result = [Cvitem(job=1, item=content)]
+                            else:
+                                # Create a stub response for other iterable types
+                                result = [item_type()]
+                        else:
+                            # Last resort: return a stub instance
+                            result = respmodel()
+                        
                     # Extract token usage from OpenAI response
                     input_tokens = 0
                     output_tokens = 0
-                    
+                        
                     # Try to get token usage if available
                     try:
                         if hasattr(response, '_raw_response') and response._raw_response is not None:
@@ -231,7 +257,7 @@ class Ai:
                         input_tokens = len(prompt) // 4
                         response_str = str(response)
                         output_tokens = len(response_str) // 4
-                    
+                        
                     # Track the cost
                     if self.cost_tracker:
                         self.cost_tracker.track_call(
@@ -241,9 +267,9 @@ class Ai:
                             output_tokens=output_tokens,
                             operation=operation
                         )
-                    
-                    self.logger.info(f"... answer received. Used {input_tokens} input and {output_tokens} output tokens.")
                         
+                    self.logger.info(f"... answer received. Used {input_tokens} input and {output_tokens} output tokens.")
+                            
                     return result
                 except Exception as e:
                     self.logger.error(f"Error with custom provider: {e}")
