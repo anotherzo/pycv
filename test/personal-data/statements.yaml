@@ -1,6 +1,6 @@
 - job: 2
   statement: >
-    Mr Me was hired as a Super Contractor to fix the wrinkles in time in our lab. He...
+    Mr. Müller was hired as a Backend Engineer to redesign the core banking API infrastructure. He successfully led the migration from a monolithic architecture to a microservices-based system, resulting in a 60% improvement in transaction processing times and enhanced system reliability.
 - job: 1
   statement: >
-    In his role as Top Score Person, Mr Me did the following things: He...
+    In his role as Lead Developer at SwissFintech AG, Mr. Müller spearheaded the development of their flagship cryptocurrency trading platform. He established coding standards, implemented CI/CD pipelines, and mentored junior developers while delivering critical features that helped the company secure Series B funding.

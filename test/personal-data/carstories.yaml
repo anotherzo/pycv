@@ -1,10 +1,24 @@
 - job: 1
   challenge: >
-    Something was not perfect at the previous job.
+    SwissFintech's trading platform was experiencing significant latency issues during peak trading hours, causing transaction failures and customer complaints.
   action: >
-    I did this and that to change this.
+    I led a comprehensive performance audit, identified bottlenecks in the database queries, and implemented a Redis caching layer. Additionally, I refactored critical transaction processing code to utilize asynchronous processing patterns.
   result: >
-    Company revenue increased by 1034%.
+    Transaction processing time decreased by 85%, system uptime improved to 99.99%, and the platform now handles 3x the previous peak load without performance degradation.
   skills:
-    - A skill I used
-    - another skill
+    - Performance optimization
+    - Redis
+    - Asynchronous programming
+    - System architecture
+- job: 2
+  challenge: >
+    The legacy banking API had poor documentation and inconsistent error handling, making integration difficult for partners.
+  action: >
+    I designed and implemented a new RESTful API with comprehensive OpenAPI documentation, consistent error responses, and a developer portal with interactive examples.
+  result: >
+    Partner integration time decreased from weeks to days, support tickets related to API issues dropped by 70%, and we onboarded 15 new partners within six months.
+  skills:
+    - API design
+    - OpenAPI/Swagger
+    - RESTful architecture
+    - Technical documentation

@@ -1,16 +1,16 @@
 - edu: 1
-  title: My Awesome Degree
-  organization: SuperUni
-  location: Boston
+  title: MSc in Computer Science
+  organization: ETH Zürich
+  location: Zürich
   date:
-    - September 2010
-    - June 2015
-  desc: I worked really really hard on this one.
+    - "September 2013"
+    - "July 2015"
+  desc: Specialized in Distributed Systems and Information Security. Master's thesis on "Scalable Consensus Algorithms for Distributed Ledger Technologies."
 - edu: 2
-  title: My First Cool Degree
-  organization: TopCollege
-  location: New York
+  title: BSc in Software Engineering
+  organization: EPFL
+  location: Lausanne
   date:
-    - "2008"
-    - "2015"
-  desc:
+    - "2010"
+    - "2013"
+  desc: Graduated with honors. Participated in the ACM Programming Contest, placing 3rd in the Swiss nationals.

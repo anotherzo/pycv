@@ -1,14 +1,14 @@
 - job: 1
-  position: Super Position
-  organization: Global Corp
-  location: Paris
+  position: Lead Developer
+  organization: SwissFintech AG
+  location: Zürich
   date:
-    - "Oct 2019"
-    - "Dec 2024"
+    - "Mar 2019"
+    - "Present"
 - job: 2
-  position: Junior Super Position
-  organization: Local ACME
-  location: Montpellier
+  position: Backend Engineer
+  organization: Credit Suisse Digital
+  location: Geneva
   date:
-    - "Aug 2015"
-    - "Oct 2019"
+    - "Jun 2015"
+    - "Feb 2019"

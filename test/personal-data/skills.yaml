@@ -1,11 +1,29 @@
-- category: Some Topic I Know
+- category: Programming Languages
   items:
-    - This
-    - That
-    - Other things
-    - More
-- category: Another Topic
+    - Python
+    - Java
+    - Kotlin
+    - TypeScript
+    - Rust
+- category: Backend Technologies
   items:
-    - Here
-    - There
-    - Everywhere
+    - Spring Boot
+    - Django
+    - FastAPI
+    - PostgreSQL
+    - MongoDB
+    - Redis
+    - Kafka
+- category: DevOps & Cloud
+  items:
+    - AWS
+    - Docker
+    - Kubernetes
+    - Terraform
+    - CI/CD (GitLab, GitHub Actions)
+- category: Methodologies
+  items:
+    - Agile/Scrum
+    - Test-Driven Development
+    - Domain-Driven Design
+    - Microservice Architecture
