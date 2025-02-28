@@ -427,16 +427,54 @@ class Ai:
                     cars=self.get_json_for(carstories),
                     job=joblink
         )
-        selectedStories = self.ask(prompt, Iterable[CarStory], operation="get_experience_stories")
-        promptpath = os.path.join(os.path.dirname(__file__), 'refine-cars-prompt.txt')
-        with open(promptpath, 'r') as f:
-            prompt = f.read()
-        prompt = prompt.format(
-                    cars=self.get_json_for(selectedStories),
-                    descriptions=self.get_json_for(descriptions),
-                    job=joblink
-        )
-        return self.ask(prompt, Iterable[Cvitem], operation="refine_experience_items")
+        
+        try:
+            selectedStories = self.ask(prompt, Iterable[CarStory], operation="get_experience_stories")
+            
+            # Check if selectedStories is None or not iterable
+            if selectedStories is None:
+                self.logger.warning("Received None for selected stories, using empty list")
+                selectedStories = []
+                
+            # Try to convert to list to ensure it's iterable
+            try:
+                selectedStories_list = list(selectedStories)
+            except (TypeError, ValueError) as e:
+                self.logger.warning(f"Could not convert selected stories to list: {e}")
+                selectedStories_list = []
+                
+            # If we have no stories, return an empty list early
+            if not selectedStories_list:
+                self.logger.warning("No stories selected, returning empty list")
+                return []
+                
+            promptpath = os.path.join(os.path.dirname(__file__), 'refine-cars-prompt.txt')
+            with open(promptpath, 'r') as f:
+                prompt = f.read()
+            prompt = prompt.format(
+                        cars=self.get_json_for(selectedStories_list),
+                        descriptions=self.get_json_for(descriptions) if descriptions else "[]",
+                        job=joblink
+            )
+            
+            job_items = self.ask(prompt, Iterable[Cvitem], operation="refine_experience_items")
+            
+            # Check if job_items is None or not iterable
+            if job_items is None:
+                self.logger.warning("Received None for job items, using empty list")
+                return []
+                
+            # Try to convert to list to ensure it's iterable
+            try:
+                job_items_list = list(job_items)
+            except (TypeError, ValueError) as e:
+                self.logger.warning(f"Could not convert job items to list: {e}")
+                return []
+                
+            return job_items_list
+        except Exception as e:
+            self.logger.warning(f"Error in get_experience: {e}")
+            return []
 
     def get_job_summaries(self, skills:list, statements:list, joblink:str) -> Iterable[JobDescription]:
         self.logger.info("Getting job summaries...")
