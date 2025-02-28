@@ -20,17 +20,6 @@ class LLMProvider(ABC):
     def get_client(self):
         """Return the client for this provider"""
         pass
-    
-    @abstractmethod
-    def create_completion(self, client, model: str, max_tokens: int, response_model: Type[BaseModel], messages: list) -> Tuple[Any, Dict[str, int]]:
-        """
-        Create a completion using the provider's API
-        
-        Returns:
-            Tuple containing (response, token_usage)
-            where token_usage is a dict with 'input' and 'output' keys
-        """
-        pass
 
 class AnthropicProvider(LLMProvider):
     """Provider for Anthropic Claude API"""
@@ -40,22 +29,6 @@ class AnthropicProvider(LLMProvider):
     
     def get_client(self):
         return instructor.from_anthropic(Anthropic(api_key=self.api_key), mode=instructor.Mode.ANTHROPIC_JSON)
-    
-    def create_completion(self, client, model: str, max_tokens: int, response_model: Type[BaseModel], messages: list) -> Tuple[Any, Dict[str, int]]:
-        response = client.chat.completions.create(
-            model=model,
-            max_tokens=max_tokens,
-            response_model=response_model,
-            messages=messages
-        )
-        
-        # Extract token usage from response
-        usage = {
-            'input': response.usage.input_tokens,
-            'output': response.usage.output_tokens
-        }
-        
-        return response, usage
 
 class OpenAIProvider(LLMProvider):
     """Provider for OpenAI and compatible APIs"""
@@ -70,22 +43,6 @@ class OpenAIProvider(LLMProvider):
         if self.base_url:
             client.base_url = self.base_url
         return instructor.from_openai(client)
-    
-    def create_completion(self, client, model: str, max_tokens: int, response_model: Type[BaseModel], messages: list) -> Tuple[Any, Dict[str, int]]:
-        response = client.chat.completions.create(
-            model=model,
-            max_tokens=max_tokens,
-            response_model=response_model,
-            messages=messages
-        )
-        
-        # Extract token usage from response
-        usage = {
-            'input': response.usage.prompt_tokens,
-            'output': response.usage.completion_tokens
-        }
-        
-        return response, usage
 
 class Ai:
     def __init__(self, cost_tracker: Optional[CostTracker] = None):
@@ -114,30 +71,78 @@ class Ai:
         client = self.provider.get_client()
         self.logger.info(f"Asking {self.provider_type} LLM for help with {operation}...")
         
-        response, token_usage = self.provider.create_completion(
-            client=client,
-            model=self.model,
-            max_tokens=self.max_tokens,
-            response_model=respmodel,
-            messages=[
+        try:
+            # Create messages for the API call
+            messages = [
                 {
                     "role": "user",
                     "content": prompt,
                 }
-            ],
-        )
-        
-        # Track the cost of this API call
-        self.cost_tracker.track_call(
-            provider=self.provider_type,
-            model=self.model,
-            input_tokens=token_usage['input'],
-            output_tokens=token_usage['output'],
-            operation=operation
-        )
-        
-        self.logger.info(f"... answer received. Used {token_usage['input']} input and {token_usage['output']} output tokens.")
-        return response
+            ]
+            
+            # For OpenAI provider
+            if self.provider_type == 'openai':
+                response = client.chat.completions.create(
+                    model=self.model,
+                    max_tokens=self.max_tokens,
+                    response_model=respmodel,
+                    messages=messages
+                )
+                
+                # Extract token usage from OpenAI response
+                if hasattr(response, 'usage'):
+                    input_tokens = response.usage.prompt_tokens
+                    output_tokens = response.usage.completion_tokens
+                    
+                    # Track the cost
+                    if self.cost_tracker:
+                        self.cost_tracker.track_call(
+                            provider=self.provider_type,
+                            model=self.model,
+                            input_tokens=input_tokens,
+                            output_tokens=output_tokens,
+                            operation=operation
+                        )
+                    
+                    self.logger.info(f"... answer received. Used {input_tokens} input and {output_tokens} output tokens.")
+                else:
+                    self.logger.info("... answer received. Token usage information not available.")
+                    
+                return response
+                
+            # For Anthropic provider
+            elif self.provider_type == 'anthropic':
+                response = client.chat.completions.create(
+                    model=self.model,
+                    max_tokens=self.max_tokens,
+                    response_model=respmodel,
+                    messages=messages
+                )
+                
+                # Extract token usage from Anthropic response
+                if hasattr(response, 'usage'):
+                    input_tokens = response.usage.input_tokens
+                    output_tokens = response.usage.output_tokens
+                    
+                    # Track the cost
+                    if self.cost_tracker:
+                        self.cost_tracker.track_call(
+                            provider=self.provider_type,
+                            model=self.model,
+                            input_tokens=input_tokens,
+                            output_tokens=output_tokens,
+                            operation=operation
+                        )
+                    
+                    self.logger.info(f"... answer received. Used {input_tokens} input and {output_tokens} output tokens.")
+                else:
+                    self.logger.info("... answer received. Token usage information not available.")
+                    
+                return response
+                
+        except Exception as e:
+            self.logger.error(f"Error getting response from LLM: {e}")
+            raise
     
     def get_json_for(self, arr: list) -> str:
         res = [item.model_dump() for item in arr]
