@@ -1,4 +1,4 @@
-- photo: data/myprofile.jpg
+- photo: test/personal-data/myprofile.jpeg
   name:
     - Firstname
     - Lastname
