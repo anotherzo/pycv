@@ -1,3 +1,4 @@
+% \VAR{joblink}
 \documentclass[11pt, a4paper]{awesome-cv}
 \RequirePackage{fontspec}
 \usepackage[ngerman]{babel}
@@ -117,7 +118,7 @@
 \cvsection{Ausbildung}
 \begin{cventries}
   \BLOCK{for entry in education}
-  \cventry{\VAR{entry.title}}{\VAR{entry.organization}}{\VAR{entry.location}}{\VAR{entry.date[0]}\textemdash \VAR{entry.date[1]}}
+  \cventry{\VAR{entry.organization}}{\VAR{entry.title}}{\VAR{entry.location}}{\VAR{entry.date[0]}\textemdash \VAR{entry.date[1]}}
   \BLOCK{if entry.desc != None }
   {\VAR{entry.desc}}
   \BLOCK{else}

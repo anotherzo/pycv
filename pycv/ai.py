@@ -7,7 +7,7 @@ from anthropic import Anthropic
 from dotenv import load_dotenv
 from typing import Iterable
 from pydantic import BaseModel, Field
-from .baseclasses import CarStory, Cvitem, JobDescription, Summary
+from .baseclasses import CarStory, Cvitem, JobDescription, Summary, Letterinfo
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -42,6 +42,7 @@ class Ai:
         return json.dumps(res)
 
     def get_experience(self, jobs:list, carstories:list, descriptions:list, joblink:str) -> Iterable[Cvitem]:
+        self.logger.info("Getting job experience information...")
         promptpath = os.path.join(os.path.dirname(__file__), 'cars-prompt.txt')
         with open(promptpath, 'r') as f:
             prompt = f.read()
@@ -62,6 +63,7 @@ class Ai:
         return self.ask(prompt, Iterable[Cvitem])
 
     def get_job_summaries(self, skills:list, statements:list, joblink:str) -> Iterable[JobDescription]:
+        self.logger.info("Getting job summaries...")
         promptpath = os.path.join(os.path.dirname(__file__), 'jobdescription-prompt.txt')
         with open(promptpath, 'r') as f:
             prompt = f.read()
@@ -73,6 +75,7 @@ class Ai:
         return self.ask(prompt, Iterable[JobDescription])
 
     def get_summary(self, skills:list, statements:list, joblink:str) -> Summary:
+        self.logger.info("Getting resume summary...")
         promptpath = os.path.join(os.path.dirname(__file__), 'summary-prompt.txt')
         with open(promptpath, 'r') as f:
             prompt = f.read()
@@ -83,6 +86,17 @@ class Ai:
         )
         return self.ask(prompt, Summary)
 
+    def get_letterinfo(self, statements:list, carstories:list, joblink:str) -> Letterinfo:
+        self.logger.info("Getting coverletter...")
+        promptpath = os.path.join(os.path.dirname(__file__), 'letterinfo-prompt.txt')
+        with open(promptpath, 'r') as f:
+            prompt = f.read()
+        prompt = prompt.format(
+                    job=joblink,
+                    statements=self.get_json_for(statements),
+                    cars=self.get_json_for(carstories),
+        )
+        return self.ask(prompt, Letterinfo)
 
 
 class StubAi:
@@ -105,3 +119,10 @@ class StubAi:
                 JobDescription(job=2, description="Something else I've done"),
         ]
 
+    def get_letterinfo(self, statements:list, carstories:list, joblink:str) -> Letterinfo:
+        return Letterinfo(
+                recipient=["ABC Company","Somestreet 42 Happytown"],
+                subject="Application for the position of Head Of Everything",
+                opening="Friends, romans, countrymen, lend me your ear",
+                content="I really really want to get this thing",
+        )
