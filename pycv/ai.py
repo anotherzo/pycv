@@ -111,9 +111,69 @@ class Ai:
                         response_model=respmodel,
                         messages=messages
                     )
+                    
+                    # Extract token usage from OpenAI response
+                    input_tokens = 0
+                    output_tokens = 0
+                    
+                    # Try to get token usage if available
+                    try:
+                        if hasattr(response, '_raw_response') and response._raw_response is not None:
+                            if hasattr(response._raw_response, 'usage'):
+                                usage = response._raw_response.usage
+                                input_tokens = getattr(usage, 'prompt_tokens', 0)
+                                output_tokens = getattr(usage, 'completion_tokens', 0)
+                            # For custom servers that might return different structures
+                            elif isinstance(response._raw_response, dict):
+                                usage = response._raw_response.get('usage', {})
+                                if usage is not None:
+                                    input_tokens = usage.get('prompt_tokens', 0)
+                                    output_tokens = usage.get('completion_tokens', 0)
+                    except (AttributeError, TypeError) as e:
+                        self.logger.warning(f"Could not extract token usage: {e}")
+                        # Estimate token count
+                        input_tokens = len(prompt) // 4
+                        response_str = str(response)
+                        output_tokens = len(response_str) // 4
+                        
+                    # Track the cost
+                    if self.cost_tracker:
+                        self.cost_tracker.track_call(
+                            provider=self.provider_type,
+                            model=self.model,
+                            input_tokens=input_tokens,
+                            output_tokens=output_tokens,
+                            operation=operation
+                        )
+                        
+                    self.logger.info(f"... answer received. Used {input_tokens} input and {output_tokens} output tokens.")
+                    
+                    return response
                 except Exception as e:
                     self.logger.error(f"Error with OpenAI provider: {e}")
-                    raise
+                    # Create a fallback response based on the model type
+                    if issubclass(respmodel, Summary):
+                        return Summary(summary="Failed to generate summary due to API error.")
+                    elif issubclass(respmodel, Letterinfo):
+                        return Letterinfo(
+                            recipient=["Company"],
+                            subject="Application",
+                            opening="Dear Hiring Manager,",
+                            content="Failed to generate content due to API error."
+                        )
+                    elif hasattr(respmodel, '__origin__') and respmodel.__origin__ is Iterable:
+                        # For Iterable[JobDescription] or similar
+                        item_type = respmodel.__args__[0]
+                        if issubclass(item_type, JobDescription):
+                            return [JobDescription(job=1, description="Failed to generate description due to API error.")]
+                        elif issubclass(item_type, Cvitem):
+                            return [Cvitem(job=1, item="Failed to generate item due to API error.")]
+                        else:
+                            # Create a stub response for other iterable types
+                            return [item_type()]
+                    else:
+                        # Last resort: return a stub instance
+                        return respmodel()
             # For custom provider
             elif self.provider_type == 'custom':
                 try:
