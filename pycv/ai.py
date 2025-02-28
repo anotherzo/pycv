@@ -44,6 +44,18 @@ class OpenAIProvider(LLMProvider):
             client.base_url = self.base_url
         return instructor.from_openai(client)
 
+class CustomProvider(LLMProvider):
+    """Provider for custom LLM servers"""
+    
+    def __init__(self, api_key: str, base_url: str):
+        self.api_key = api_key
+        self.base_url = base_url
+    
+    def get_client(self):
+        import openai
+        client = openai.OpenAI(api_key=self.api_key, base_url=self.base_url)
+        return instructor.from_openai(client)
+
 class Ai:
     def __init__(self, cost_tracker: Optional[CostTracker] = None):
         self.provider_type = os.getenv('LLM_PROVIDER', 'anthropic').lower()
@@ -64,6 +76,11 @@ class Ai:
             if not api_key:
                 raise ValueError("OPENAI_API_KEY environment variable is not set")
             self.provider = OpenAIProvider(api_key, self.base_url)
+        elif self.provider_type == 'custom':
+            api_key = os.getenv('OPENAI_API_KEY', 'dummy-key')  # Some servers don't need a real key
+            if not self.base_url:
+                raise ValueError("LLM_BASE_URL environment variable is not set for custom provider")
+            self.provider = CustomProvider(api_key, self.base_url)
         else:
             raise ValueError(f"Unsupported LLM provider: {self.provider_type}")
 
@@ -80,8 +97,8 @@ class Ai:
                 }
             ]
             
-            # For OpenAI provider
-            if self.provider_type == 'openai':
+            # For OpenAI provider or custom provider
+            if self.provider_type in ['openai', 'custom']:
                 response = client.chat.completions.create(
                     model=self.model,
                     max_tokens=self.max_tokens,
@@ -90,23 +107,38 @@ class Ai:
                 )
                 
                 # Extract token usage from OpenAI response
-                if hasattr(response, '_raw_response') and hasattr(response._raw_response, 'usage'):
-                    input_tokens = response._raw_response.usage.prompt_tokens
-                    output_tokens = response._raw_response.usage.completion_tokens
-                    
-                    # Track the cost
-                    if self.cost_tracker:
-                        self.cost_tracker.track_call(
-                            provider=self.provider_type,
-                            model=self.model,
-                            input_tokens=input_tokens,
-                            output_tokens=output_tokens,
-                            operation=operation
-                        )
-                    
-                    self.logger.info(f"... answer received. Used {input_tokens} input and {output_tokens} output tokens.")
-                else:
-                    self.logger.info("... answer received. Token usage information not available.")
+                input_tokens = 0
+                output_tokens = 0
+                
+                # Try to get token usage if available
+                try:
+                    if hasattr(response, '_raw_response') and hasattr(response._raw_response, 'usage'):
+                        usage = response._raw_response.usage
+                        input_tokens = getattr(usage, 'prompt_tokens', 0)
+                        output_tokens = getattr(usage, 'completion_tokens', 0)
+                    # For custom servers that might return different structures
+                    elif hasattr(response, '_raw_response') and isinstance(response._raw_response, dict):
+                        usage = response._raw_response.get('usage', {})
+                        input_tokens = usage.get('prompt_tokens', 0)
+                        output_tokens = usage.get('completion_tokens', 0)
+                except (AttributeError, TypeError) as e:
+                    self.logger.warning(f"Could not extract token usage: {e}")
+                    # Estimate token count
+                    input_tokens = len(prompt) // 4
+                    response_str = str(response)
+                    output_tokens = len(response_str) // 4
+                
+                # Track the cost
+                if self.cost_tracker:
+                    self.cost_tracker.track_call(
+                        provider=self.provider_type,
+                        model=self.model,
+                        input_tokens=input_tokens,
+                        output_tokens=output_tokens,
+                        operation=operation
+                    )
+                
+                self.logger.info(f"... answer received. Used {input_tokens} input and {output_tokens} output tokens.")
                     
                 return response
                 
