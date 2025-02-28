@@ -448,13 +448,31 @@ class Ai:
                     statements=self.get_json_for(statements),
                     job=joblink
         )
-        job_descriptions = self.ask(prompt, Iterable[JobDescription], operation="get_job_summaries")
         
-        # Escape special LaTeX characters in descriptions
-        for job_desc in job_descriptions:
-            job_desc.description = job_desc.description.replace('_', '\\_').replace('%', '\\%').replace('&', '\\&').replace('#', '\\#').replace('$', '\\$').replace('{', '\\{').replace('}', '\\}')
-        
-        return job_descriptions
+        try:
+            job_descriptions = self.ask(prompt, Iterable[JobDescription], operation="get_job_summaries")
+            
+            # Check if job_descriptions is None or not iterable
+            if job_descriptions is None:
+                self.logger.warning("Received None for job descriptions, using empty list")
+                return []
+                
+            # Try to convert to list to ensure it's iterable
+            try:
+                job_descriptions_list = list(job_descriptions)
+            except (TypeError, ValueError) as e:
+                self.logger.warning(f"Could not convert job descriptions to list: {e}")
+                return []
+            
+            # Escape special LaTeX characters in descriptions
+            for job_desc in job_descriptions_list:
+                if hasattr(job_desc, 'description') and job_desc.description:
+                    job_desc.description = job_desc.description.replace('_', '\\_').replace('%', '\\%').replace('&', '\\&').replace('#', '\\#').replace('$', '\\$').replace('{', '\\{').replace('}', '\\}')
+            
+            return job_descriptions_list
+        except Exception as e:
+            self.logger.warning(f"Error in get_job_summaries: {e}")
+            return []
 
     def get_summary(self, skills:list, statements:list, joblink:str) -> Summary:
         self.logger.info("Getting resume summary...")
