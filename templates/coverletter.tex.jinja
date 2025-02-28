@@ -61,11 +61,11 @@
 \BLOCK{endfor}
 
 \recipient
-  {\VAR{letterinfo.recipient[0]}}
-  {\VAR{letterinfo.recipient[1]}, \VAR{letterinfo.recipient[2]}}
+  {\VAR{letterinfo.recipient[0] | latex_safe}}
+  {\VAR{letterinfo.recipient[1] | latex_safe}, \VAR{letterinfo.recipient[2] | latex_safe}}
 \letterdate{\today}
-\lettertitle{\VAR{letterinfo.subject}}
-\letteropening{\VAR{letterinfo.opening}}
+\lettertitle{\VAR{letterinfo.subject | latex_safe}}
+\letteropening{\VAR{letterinfo.opening | latex_safe}}
 \letterclosing{Mit freundlichen Grüssen,}
 \letterenclosure[Attached]{Curriculum Vitae}
 
@@ -79,7 +79,7 @@
 \makelettertitle
 \begin{cvletter}
 
-\VAR{letterinfo.content}
+\VAR{letterinfo.content | latex_safe}
 
 \end{cvletter}
 \makeletterclosing

@@ -80,7 +80,7 @@
 
 
 \begin{multicols}{2}
-  \VAR{summary.summary}
+  \VAR{summary.summary | latex_safe}
 \end{multicols}
 
 \end{cvparagraph}
@@ -89,9 +89,9 @@
 \begin{cventries}
 \BLOCK{for entry in jobblocks}
 \cventry
-  {\VAR{entry[0].position}}
-  {\VAR{entry[0].organization}}
-  {\VAR{entry[0].location}}
+  {\VAR{entry[0].position | latex_safe}}
+  {\VAR{entry[0].organization | latex_safe}}
+  {\VAR{entry[0].location | latex_safe}}
   {\VAR{entry[0].date[0]}\textemdash \VAR{entry[0].date[1]}}
   \BLOCK{if entry[1]|length == 0 and entry[2]|length == 0}
 {}
@@ -100,14 +100,14 @@
   \BLOCK{if entry[1]|length > 0}
   \vspace{-0.2cm}
   \begin{minipage}{\textwidth}
-  \VAR{entry[1][0].description}
+  \VAR{entry[1][0].description | latex_safe}
   \end{minipage}
   \vspace{0.6cm}
   \BLOCK{endif}
   \BLOCK{if entry[2]|length > 0}
   \begin{cvitems}
     \BLOCK{for item in entry[2]}
-  \item {\VAR{item.item}}
+  \item {\VAR{item.item | latex_safe}}
     \BLOCK{endfor}
   \end{cvitems}
   \BLOCK{endif}
@@ -133,14 +133,14 @@
 \cvsection{Technische Fähigkeiten}
 \begin{cvskills}
   \BLOCK{for entry in skills}
-  \cvskill{\VAR{entry.category}}{\VAR{ entry.items | join(", ") | replace("(", "\\(") | replace(")", "\\)") }}
+  \cvskill{\VAR{entry.category | latex_safe}}{\VAR{ entry.items | join(", ") | latex_safe }}
   \BLOCK{endfor}
 \end{cvskills}
 
 \cvsection{Sprachen}
 \begin{cvskills}
   \BLOCK{for entry in languages}
-\cvskill{\VAR{entry.language}}{\VAR{entry.level}}
+\cvskill{\VAR{entry.language | latex_safe}}{\VAR{entry.level | latex_safe}}
   \BLOCK{endfor}
 \end{cvskills}
 

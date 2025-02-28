@@ -34,7 +34,7 @@ class PyCv:
                 self.ai = StubAi()
 
     def _get_jinja_env(self):
-        return jinja2.Environment(
+        env = jinja2.Environment(
             block_start_string = r'\BLOCK{',
             block_end_string = '}',
             variable_start_string = r'\VAR{',
@@ -47,6 +47,10 @@ class PyCv:
             autoescape = False,
             loader = jinja2.FileSystemLoader(os.path.abspath('./templates'))
         )
+        # Add the sanitize_text_for_latex as a filter
+        from .utils import sanitize_text_for_latex
+        env.filters['latex_safe'] = sanitize_text_for_latex
+        return env
 
     def generate_coverletter(self):
         """Generate the complete LaTeX document"""
