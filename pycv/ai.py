@@ -102,8 +102,8 @@ class Ai:
                 }
             ]
             
-            # For OpenAI provider or custom provider
-            if self.provider_type in ['openai', 'custom']:
+            # For OpenAI provider
+            if self.provider_type == 'openai':
                 try:
                     response = client.chat.completions.create(
                         model=self.model,
@@ -111,12 +111,62 @@ class Ai:
                         response_model=respmodel,
                         messages=messages
                     )
+            # For custom provider
+            elif self.provider_type == 'custom':
+                try:
+                    # For custom provider, don't use response_model directly with OpenAI client
+                    response = client.chat.completions.create(
+                        model=self.model,
+                        max_tokens=self.max_tokens,
+                        messages=messages
+                    )
                     
-                    # Debug logging for custom providers
-                    if self.provider_type == 'custom':
-                        self.logger.debug(f"Raw response from custom provider: {response}")
-                        if hasattr(response, '_raw_response'):
-                            self.logger.debug(f"_raw_response attribute: {response._raw_response}")
+                    # Extract the content from the response
+                    content = response.choices[0].message.content
+                    
+                    self.logger.debug(f"Raw response content: {content}")
+                    
+                    # Try to parse the content as JSON
+                    try:
+                        parsed_content = json.loads(content)
+                        # Create an instance of the response model
+                        if issubclass(respmodel, BaseModel):
+                            result = respmodel.model_validate(parsed_content)
+                            return result
+                        elif hasattr(respmodel, '__origin__') and respmodel.__origin__ is Iterable:
+                            # Handle Iterable[SomeModel]
+                            item_type = respmodel.__args__[0]
+                            if isinstance(parsed_content, list):
+                                return [item_type.model_validate(item) for item in parsed_content]
+                            else:
+                                return [item_type.model_validate(parsed_content)]
+                    except json.JSONDecodeError as json_err:
+                        self.logger.error(f"Failed to parse response as JSON: {json_err}")
+                        self.logger.debug(f"Non-JSON response: {content}")
+                        
+                        # If we can't parse as JSON, try to create a simple instance with the text
+                        if issubclass(respmodel, Summary):
+                            return Summary(summary=content)
+                        elif issubclass(respmodel, Letterinfo):
+                            return Letterinfo(
+                                recipient=["Company"],
+                                subject="Application",
+                                opening="Dear Hiring Manager,",
+                                content=content
+                            )
+                        elif hasattr(respmodel, '__origin__') and respmodel.__origin__ is Iterable:
+                            # For Iterable[JobDescription] or similar
+                            item_type = respmodel.__args__[0]
+                            if issubclass(item_type, JobDescription):
+                                return [JobDescription(job=1, description=content)]
+                            elif issubclass(item_type, Cvitem):
+                                return [Cvitem(job=1, item=content)]
+                            else:
+                                # Create a stub response for other iterable types
+                                return [item_type()]
+                        else:
+                            # Last resort: return a stub instance
+                            return respmodel()
                     
                     # Extract token usage from OpenAI response
                     input_tokens = 0
@@ -156,9 +206,9 @@ class Ai:
                         
                     return response
                 except Exception as e:
-                    self.logger.error(f"Error with OpenAI/custom provider: {e}")
-                    # If we're using a custom provider, try a more direct approach as fallback
-                    if self.provider_type == 'custom':
+                    self.logger.error(f"Error with OpenAI provider: {e}")
+                    raise
+            elif self.provider_type == 'custom':
                         self.logger.info(f"Using custom provider with endpoint: {self.provider.endpoint}")
                         try:
                             import openai
