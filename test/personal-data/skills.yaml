@@ -20,7 +20,7 @@
     - Docker
     - Kubernetes
     - Terraform
-    - CI/CD (GitLab, GitHub Actions)
+    - "CI/CD (GitLab, GitHub Actions)"
 - category: Methodologies
   items:
     - Agile/Scrum

@@ -133,7 +133,7 @@
 \cvsection{Technische Fähigkeiten}
 \begin{cvskills}
   \BLOCK{for entry in skills}
-  \cvskill{\VAR{entry.category}}{\VAR{ entry.items | join(", ")}}
+  \cvskill{\VAR{entry.category}}{\VAR{ entry.items | join(", ") | replace("(", "\\(") | replace(")", "\\)") }}
   \BLOCK{endfor}
 \end{cvskills}
 
