@@ -244,7 +244,7 @@ class Ai:
                     
                     self.logger.info(f"... answer received. Used {input_tokens} input and {output_tokens} output tokens.")
                         
-                    return response
+                    return result
                 except Exception as e:
                     self.logger.error(f"Error with custom provider: {e}")
                     raise
