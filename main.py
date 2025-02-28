@@ -27,8 +27,15 @@ def main(joblink: str, projectname: str, compile: bool, verbose: bool, datadir: 
     cv.save_latex()
 
     if compile:
-        subprocess.run(['xelatex', 'resume.' + projectname + '.tex'])
-        subprocess.run(['xelatex', 'coverletter.' + projectname + '.tex'])
+        logging.info(f"Compiling LaTeX files for {projectname}...")
+        # Redirect output to DEVNULL to hide it
+        subprocess.run(['xelatex', 'resume.' + projectname + '.tex'], 
+                      stdout=subprocess.DEVNULL, 
+                      stderr=subprocess.DEVNULL)
+        subprocess.run(['xelatex', 'coverletter.' + projectname + '.tex'], 
+                      stdout=subprocess.DEVNULL, 
+                      stderr=subprocess.DEVNULL)
+        logging.info("LaTeX compilation completed.")
 
 if __name__ == "__main__":
     main()
