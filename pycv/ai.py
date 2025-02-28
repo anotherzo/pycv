@@ -128,16 +128,33 @@ class Ai:
                     # Try to get token usage if available
                     try:
                         if hasattr(response, '_raw_response') and response._raw_response is not None:
-                            if hasattr(response._raw_response, 'usage'):
-                                usage = response._raw_response.usage
+                            raw_resp = response._raw_response
+                            if hasattr(raw_resp, 'usage'):
+                                usage = raw_resp.usage
                                 input_tokens = getattr(usage, 'prompt_tokens', 0)
                                 output_tokens = getattr(usage, 'completion_tokens', 0)
                             # For custom servers that might return different structures
-                            elif isinstance(response._raw_response, dict):
-                                usage = response._raw_response.get('usage', {})
+                            elif isinstance(raw_resp, dict) and 'usage' in raw_resp:
+                                usage = raw_resp['usage']
                                 if usage is not None:
                                     input_tokens = usage.get('prompt_tokens', 0)
                                     output_tokens = usage.get('completion_tokens', 0)
+                        
+                        # If we still don't have token counts, try to access them directly from response
+                        if input_tokens == 0 and output_tokens == 0 and hasattr(response, 'usage'):
+                            usage = response.usage
+                            input_tokens = getattr(usage, 'prompt_tokens', 0)
+                            output_tokens = getattr(usage, 'completion_tokens', 0)
+                            
+                        # If we still don't have token counts, estimate them
+                        if input_tokens == 0 and output_tokens == 0:
+                            # Estimate token count (rough approximation: 1 token ≈ 4 characters)
+                            input_tokens = len(prompt) // 4
+                            # For output tokens, we need to estimate from the response
+                            response_str = str(response)
+                            output_tokens = len(response_str) // 4
+                            self.logger.debug("Using estimated token counts")
+                            
                     except (AttributeError, TypeError) as e:
                         self.logger.warning(f"Could not extract token usage: {e}")
                         # Estimate token count
@@ -310,16 +327,33 @@ class Ai:
                     # Try to get token usage if available
                     try:
                         if hasattr(response, '_raw_response') and response._raw_response is not None:
-                            if hasattr(response._raw_response, 'usage'):
-                                usage = response._raw_response.usage
+                            raw_resp = response._raw_response
+                            if hasattr(raw_resp, 'usage'):
+                                usage = raw_resp.usage
                                 input_tokens = getattr(usage, 'prompt_tokens', 0)
                                 output_tokens = getattr(usage, 'completion_tokens', 0)
                             # For custom servers that might return different structures
-                            elif isinstance(response._raw_response, dict):
-                                usage = response._raw_response.get('usage', {})
+                            elif isinstance(raw_resp, dict) and 'usage' in raw_resp:
+                                usage = raw_resp['usage']
                                 if usage is not None:
                                     input_tokens = usage.get('prompt_tokens', 0)
                                     output_tokens = usage.get('completion_tokens', 0)
+                        
+                        # If we still don't have token counts, try to access them directly from response
+                        if input_tokens == 0 and output_tokens == 0 and hasattr(response, 'usage'):
+                            usage = response.usage
+                            input_tokens = getattr(usage, 'prompt_tokens', 0)
+                            output_tokens = getattr(usage, 'completion_tokens', 0)
+                            
+                        # If we still don't have token counts, estimate them
+                        if input_tokens == 0 and output_tokens == 0:
+                            # Estimate token count (rough approximation: 1 token ≈ 4 characters)
+                            input_tokens = len(prompt) // 4
+                            # For output tokens, we need to estimate from the response
+                            response_str = str(response)
+                            output_tokens = len(response_str) // 4
+                            self.logger.debug("Using estimated token counts")
+                            
                     except (AttributeError, TypeError) as e:
                         self.logger.warning(f"Could not extract token usage: {e}")
                         # Estimate token count
@@ -376,6 +410,14 @@ class Ai:
                                 input_tokens = usage['input_tokens']
                                 output_tokens = usage['output_tokens']
                                 usage_found = True
+                    
+                    # Try to access usage directly from response if not found yet
+                    if not usage_found and hasattr(response, 'usage'):
+                        usage = response.usage
+                        if hasattr(usage, 'input_tokens') and hasattr(usage, 'output_tokens'):
+                            input_tokens = usage.input_tokens
+                            output_tokens = usage.output_tokens
+                            usage_found = True
                     
                     # If we still don't have usage, estimate based on prompt and response length
                     if not usage_found:
