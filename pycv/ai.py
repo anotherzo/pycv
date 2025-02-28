@@ -50,11 +50,12 @@ class CustomProvider(LLMProvider):
     def __init__(self, api_key: str, base_url: str):
         self.api_key = api_key
         self.base_url = base_url
+        self.endpoint = os.getenv('LLM_ENDPOINT', '/v1/completions')  # Default to completions if not specified
     
     def get_client(self):
         import openai
         client = openai.OpenAI(api_key=self.api_key, base_url=self.base_url)
-        return instructor.from_openai(client)
+        return client  # Return raw client, we'll handle the instructor part manually
 
 class Ai:
     def __init__(self, cost_tracker: Optional[CostTracker] = None):
