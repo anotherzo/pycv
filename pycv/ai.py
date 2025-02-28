@@ -90,9 +90,9 @@ class Ai:
                 )
                 
                 # Extract token usage from OpenAI response
-                if hasattr(response, 'usage'):
-                    input_tokens = response.usage.prompt_tokens
-                    output_tokens = response.usage.completion_tokens
+                if hasattr(response, '_raw_response') and hasattr(response._raw_response, 'usage'):
+                    input_tokens = response._raw_response.usage.prompt_tokens
+                    output_tokens = response._raw_response.usage.completion_tokens
                     
                     # Track the cost
                     if self.cost_tracker:
