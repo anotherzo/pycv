@@ -50,10 +50,12 @@ class CustomProvider(LLMProvider):
     def __init__(self, api_key: str, base_url: str):
         self.api_key = api_key
         self.base_url = base_url
-        self.endpoint = os.getenv('LLM_ENDPOINT', '/v1/completions')  # Default to completions if not specified
+        # Make sure the endpoint starts with /v1 as shown in the server logs
+        self.endpoint = os.getenv('LLM_ENDPOINT', '/v1/completions')
     
     def get_client(self):
         import openai
+        # The OpenAI client will automatically append the endpoint to the base_url
         client = openai.OpenAI(api_key=self.api_key, base_url=self.base_url)
         return client  # Return raw client, we'll handle the instructor part manually
 
@@ -161,9 +163,9 @@ class Ai:
                             client = self.provider.get_client()
                             
                             # Determine which endpoint to use based on the server's capabilities
-                            if self.provider.endpoint == '/v1/completions':
+                            if self.provider.endpoint.endswith('/completions'):
                                 # Use completions endpoint without response_model
-                                self.logger.debug("Using completions endpoint")
+                                self.logger.debug(f"Using completions endpoint: {self.provider.endpoint}")
                                 try:
                                     response = client.completions.create(
                                         model=self.model,
