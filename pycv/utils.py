@@ -12,23 +12,28 @@ def sanitize_text_for_latex(text: str) -> str:
         return text
         
     # Characters that need escaping in LaTeX
-    replacements = {
-        '_': r'\_',
-        '%': r'\%',
-        '&': r'\&',
-        '#': r'\#',
-        '$': r'\$',
-        '{': r'\{',
-        '}': r'\}',
-        '~': r'\textasciitilde{}',
-        '^': r'\textasciicircum{}',
-        '\\': r'\textbackslash{}',
-        '<': r'\textless{}',
-        '>': r'\textgreater{}'
-    }
+    # Order matters - backslash must be first to avoid double-escaping
+    replacements = [
+        ('\\', r'\textbackslash{}'),
+        ('_', r'\_'),
+        ('%', r'\%'),
+        ('&', r'\&'),
+        ('#', r'\#'),
+        ('$', r'\$'),
+        ('{', r'\{'),
+        ('}', r'\}'),
+        ('~', r'\textasciitilde{}'),
+        ('^', r'\textasciicircum{}'),
+        ('<', r'\textless{}'),
+        ('>', r'\textgreater{}')
+    ]
     
-    # Apply all replacements
-    for char, replacement in replacements.items():
+    # Apply all replacements in order
+    for char, replacement in replacements:
         text = text.replace(char, replacement)
+    
+    # Handle paragraph breaks properly for LaTeX
+    # Replace double newlines with LaTeX paragraph breaks
+    text = text.replace('\n\n', '\n\\par\n')
         
     return text
