@@ -35,7 +35,7 @@ class PyCv:
 
     def _get_jinja_env(self):
         return jinja2.Environment(
-            block_start_string = '\BLOCK{',
+            block_start_string = r'\BLOCK{',
             block_end_string = '}',
             variable_start_string = r'\VAR{',
             variable_end_string = '}',
