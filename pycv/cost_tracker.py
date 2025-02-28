@@ -65,20 +65,29 @@ class CostTracker:
         Returns:
             Dictionary with pricing data organized by provider and model
         """
-        url = "https://raw.githubusercontent.com/gramener/llmpricing/master/elo.csv"
+        url = "https://raw.githubusercontent.com/gramener/llmpricing/refs/heads/master/elo.csv"
         
         try:
             with httpx.Client(timeout=10.0) as client:
                 response = client.get(url)
                 response.raise_for_status()
                 
-                # Save to a temporary file and parse as CSV
-                with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
-                    temp_file.write(response.text)
-                    temp_file.flush()
-                    temp_path = Path(temp_file.name)
+                # Check if the response is HTML instead of CSV
+                content = response.text
+                if "<html" in content.lower():
+                    # Try to extract CSV data from HTML
+                    import re
+                    # Look for CSV data between <pre> tags
+                    match = re.search(r'<pre[^>]*>(.*?)</pre>', content, re.DOTALL)
+                    if match:
+                        content = match.group(1)
+                        self.logger.info("Successfully extracted CSV data from HTML response")
+                    else:
+                        self.logger.warning("Received HTML response but couldn't extract CSV data")
+                        return None
                 
-                # Parse the CSV
+                # Process the CSV content directly using StringIO
+                from io import StringIO
                 pricing_data = {
                     'anthropic': {},
                     'openai': {},
@@ -88,8 +97,9 @@ class CostTracker:
                     'other': {}
                 }
                 
-                with open(temp_path, 'r') as f:
-                    reader = csv.DictReader(f)
+                try:
+                    csv_file = StringIO(content)
+                    reader = csv.DictReader(csv_file)
                     for row in reader:
                         # Skip rows without pricing info
                         if not row.get('cpmi') or row['cpmi'] == '':
@@ -118,14 +128,23 @@ class CostTracker:
                                 'input': price_per_million,
                                 'output': price_per_million
                             }
+                            
+                            # Log some of the loaded models for verification
+                            if len(pricing_data[provider]) <= 3:  # Log just the first few models per provider
+                                self.logger.debug(f"Loaded pricing for {provider}/{model_name}: ${price_per_million}/M tokens")
+                                
                         except (ValueError, KeyError) as e:
                             self.logger.warning(f"Error parsing pricing row: {e}")
                             continue
-                
-                # Clean up temp file
-                temp_path.unlink(missing_ok=True)
-                
-                return pricing_data
+                    
+                    # Log summary of loaded pricing data
+                    total_models = sum(len(models) for models in pricing_data.values())
+                    self.logger.info(f"Successfully loaded pricing data for {total_models} models")
+                    
+                    return pricing_data
+                except Exception as e:
+                    self.logger.warning(f"Error processing CSV: {e}")
+                    return None
         except Exception as e:
             self.logger.warning(f"Failed to fetch external pricing: {e}")
             return None
