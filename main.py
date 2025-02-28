@@ -11,7 +11,8 @@ from pycv import PyCv
 @click.option('--compile/--no-compile', '-c/-nc', default=True, help='Compile the LaTeX output (default: True)')
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose logging')
 @click.option('--datadir', '-d', default='data', help='Directory containing YAML data files (default: data)')
-def main(joblink: str, projectname: str, compile: bool, verbose: bool, datadir: str):
+@click.option('--track-costs/--no-track-costs', default=True, help='Track API costs (default: True)')
+def main(joblink: str, projectname: str, compile: bool, verbose: bool, datadir: str, track_costs: bool):
     """Generate a customized CV based on a job posting."""
     log_level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
@@ -19,8 +20,8 @@ def main(joblink: str, projectname: str, compile: bool, verbose: bool, datadir: 
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
 
-    # Initialize PyCv with datadir
-    cv = PyCv(joblink, projectname, datadir)
+    # Initialize PyCv with datadir and cost tracking option
+    cv = PyCv(joblink, projectname, datadir, track_costs=track_costs)
 
     # Generate and save LaTeX
     cv.save_latex()

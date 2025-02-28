@@ -11,15 +11,27 @@ from pydantic import BaseModel, Field
 from .datastore import YamlStore
 from .baseclasses import CarStory, Cvitem, Language
 from .ai import Ai, StubAi
+from .cost_tracker import CostTracker
 
 class PyCv:
-    def __init__(self, joblink: str, projectname: str, datadir: str = 'data'):
-        """Initialize the PyCv class with OpenAI credentials"""
+    def __init__(self, joblink: str, projectname: str, datadir: str = 'data', track_costs: bool = True):
+        """
+        Initialize the PyCv class
+        
+        Args:
+            joblink: URL of the job posting
+            projectname: Name of the project for file naming
+            datadir: Directory containing YAML data files
+            track_costs: Whether to track API costs
+        """
         self.datastore = YamlStore(datadir)
         self.datastore.load_data()
         self.joblink = joblink
         self.projectname = projectname
         self.logger = logging.getLogger(self.__class__.__name__)
+        
+        # Initialize cost tracker if enabled
+        self.cost_tracker = CostTracker() if track_costs else None
         
         # Always use StubAi for test mode
         if self.projectname == "test":
@@ -27,7 +39,7 @@ class PyCv:
         else:
             # Try to initialize the AI, fall back to StubAi if there's an error
             try:
-                self.ai = Ai()
+                self.ai = Ai(cost_tracker=self.cost_tracker)
             except Exception as e:
                 self.logger.warning(f"Could not initialize AI service: {e}")
                 self.logger.warning("Falling back to StubAi for testing purposes.")
@@ -134,3 +146,19 @@ class PyCv:
     def save_latex(self):
         self.generate_resume()
         self.generate_coverletter()
+        
+        # Save cost log if tracking is enabled
+        if self.cost_tracker:
+            self.cost_tracker.save_log(self.projectname)
+            self.cost_tracker.print_summary()
+            
+    def get_cost_summary(self) -> Dict[str, Any]:
+        """
+        Get a summary of the API costs incurred.
+        
+        Returns:
+            Dictionary with cost summary information or None if tracking is disabled
+        """
+        if self.cost_tracker:
+            return self.cost_tracker.get_summary()
+        return None

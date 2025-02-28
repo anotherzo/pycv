@@ -5,10 +5,11 @@ import logging
 import instructor
 from anthropic import Anthropic
 from dotenv import load_dotenv
-from typing import Iterable, Type, Dict, Any, Optional
+from typing import Iterable, Type, Dict, Any, Optional, Tuple
 from pydantic import BaseModel, Field
 from abc import ABC, abstractmethod
 from .baseclasses import CarStory, Cvitem, JobDescription, Summary, Letterinfo
+from .cost_tracker import CostTracker
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -21,8 +22,14 @@ class LLMProvider(ABC):
         pass
     
     @abstractmethod
-    def create_completion(self, client, model: str, max_tokens: int, response_model: Type[BaseModel], messages: list) -> Any:
-        """Create a completion using the provider's API"""
+    def create_completion(self, client, model: str, max_tokens: int, response_model: Type[BaseModel], messages: list) -> Tuple[Any, Dict[str, int]]:
+        """
+        Create a completion using the provider's API
+        
+        Returns:
+            Tuple containing (response, token_usage)
+            where token_usage is a dict with 'input' and 'output' keys
+        """
         pass
 
 class AnthropicProvider(LLMProvider):
@@ -34,13 +41,21 @@ class AnthropicProvider(LLMProvider):
     def get_client(self):
         return instructor.from_anthropic(Anthropic(api_key=self.api_key), mode=instructor.Mode.ANTHROPIC_JSON)
     
-    def create_completion(self, client, model: str, max_tokens: int, response_model: Type[BaseModel], messages: list) -> Any:
-        return client.chat.completions.create(
+    def create_completion(self, client, model: str, max_tokens: int, response_model: Type[BaseModel], messages: list) -> Tuple[Any, Dict[str, int]]:
+        response = client.chat.completions.create(
             model=model,
             max_tokens=max_tokens,
             response_model=response_model,
             messages=messages
         )
+        
+        # Extract token usage from response
+        usage = {
+            'input': response.usage.input_tokens,
+            'output': response.usage.output_tokens
+        }
+        
+        return response, usage
 
 class OpenAIProvider(LLMProvider):
     """Provider for OpenAI and compatible APIs"""
@@ -56,21 +71,30 @@ class OpenAIProvider(LLMProvider):
             client.base_url = self.base_url
         return instructor.from_openai(client)
     
-    def create_completion(self, client, model: str, max_tokens: int, response_model: Type[BaseModel], messages: list) -> Any:
-        return client.chat.completions.create(
+    def create_completion(self, client, model: str, max_tokens: int, response_model: Type[BaseModel], messages: list) -> Tuple[Any, Dict[str, int]]:
+        response = client.chat.completions.create(
             model=model,
             max_tokens=max_tokens,
             response_model=response_model,
             messages=messages
         )
+        
+        # Extract token usage from response
+        usage = {
+            'input': response.usage.prompt_tokens,
+            'output': response.usage.completion_tokens
+        }
+        
+        return response, usage
 
 class Ai:
-    def __init__(self):
+    def __init__(self, cost_tracker: Optional[CostTracker] = None):
         self.provider_type = os.getenv('LLM_PROVIDER', 'anthropic').lower()
         self.model = os.getenv('LLM_MODEL', 'claude-3-5-sonnet-20240620')
         self.max_tokens = int(os.getenv('LLM_MAX_TOKENS', '4096'))
         self.base_url = os.getenv('LLM_BASE_URL')  # For local LLMs
         self.logger = logging.getLogger(self.__class__.__name__)
+        self.cost_tracker = cost_tracker or CostTracker()
         
         # Initialize the appropriate provider
         if self.provider_type == 'anthropic':
@@ -86,10 +110,11 @@ class Ai:
         else:
             raise ValueError(f"Unsupported LLM provider: {self.provider_type}")
 
-    def ask(self, prompt: str, respmodel):
+    def ask(self, prompt: str, respmodel, operation: str = "generic_query"):
         client = self.provider.get_client()
-        self.logger.info(f"Asking {self.provider_type} LLM for help...")
-        res = self.provider.create_completion(
+        self.logger.info(f"Asking {self.provider_type} LLM for help with {operation}...")
+        
+        response, token_usage = self.provider.create_completion(
             client=client,
             model=self.model,
             max_tokens=self.max_tokens,
@@ -101,8 +126,18 @@ class Ai:
                 }
             ],
         )
-        self.logger.info("... answer received.")
-        return res
+        
+        # Track the cost of this API call
+        self.cost_tracker.track_call(
+            provider=self.provider_type,
+            model=self.model,
+            input_tokens=token_usage['input'],
+            output_tokens=token_usage['output'],
+            operation=operation
+        )
+        
+        self.logger.info(f"... answer received. Used {token_usage['input']} input and {token_usage['output']} output tokens.")
+        return response
     
     def get_json_for(self, arr: list) -> str:
         res = [item.model_dump() for item in arr]
@@ -118,7 +153,7 @@ class Ai:
                     cars=self.get_json_for(carstories),
                     job=joblink
         )
-        selectedStories = self.ask(prompt, Iterable[CarStory])
+        selectedStories = self.ask(prompt, Iterable[CarStory], operation="get_experience_stories")
         promptpath = os.path.join(os.path.dirname(__file__), 'refine-cars-prompt.txt')
         with open(promptpath, 'r') as f:
             prompt = f.read()
@@ -127,7 +162,7 @@ class Ai:
                     descriptions=self.get_json_for(descriptions),
                     job=joblink
         )
-        return self.ask(prompt, Iterable[Cvitem])
+        return self.ask(prompt, Iterable[Cvitem], operation="refine_experience_items")
 
     def get_job_summaries(self, skills:list, statements:list, joblink:str) -> Iterable[JobDescription]:
         self.logger.info("Getting job summaries...")
@@ -139,7 +174,7 @@ class Ai:
                     statements=self.get_json_for(statements),
                     job=joblink
         )
-        job_descriptions = self.ask(prompt, Iterable[JobDescription])
+        job_descriptions = self.ask(prompt, Iterable[JobDescription], operation="get_job_summaries")
         
         # Escape special LaTeX characters in descriptions
         for job_desc in job_descriptions:
@@ -157,7 +192,7 @@ class Ai:
                     statements=self.get_json_for(statements),
                     job=joblink
         )
-        return self.ask(prompt, Summary)
+        return self.ask(prompt, Summary, operation="get_summary")
 
     def get_letterinfo(self, statements:list, carstories:list, joblink:str) -> Letterinfo:
         self.logger.info("Getting coverletter...")
@@ -169,7 +204,7 @@ class Ai:
                     statements=self.get_json_for(statements),
                     cars=self.get_json_for(carstories),
         )
-        return self.ask(prompt, Letterinfo)
+        return self.ask(prompt, Letterinfo, operation="get_letterinfo")
 
 
 class StubAi:
