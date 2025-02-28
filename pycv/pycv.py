@@ -13,9 +13,9 @@ from .baseclasses import CarStory, Cvitem, Language
 from .ai import Ai, StubAi
 
 class PyCv:
-    def __init__(self, joblink: str, projectname: str):
+    def __init__(self, joblink: str, projectname: str, datadir: str = 'data'):
         """Initialize the PyCv class with OpenAI credentials"""
-        self.datastore = YamlStore()
+        self.datastore = YamlStore(datadir)
         self.datastore.load_data()
         self.joblink = joblink
         self.projectname = projectname
@@ -28,9 +28,9 @@ class PyCv:
         return jinja2.Environment(
             block_start_string = '\BLOCK{',
             block_end_string = '}',
-            variable_start_string = '\VAR{',
+            variable_start_string = r'\VAR{',
             variable_end_string = '}',
-            comment_start_string = '\#{',
+            comment_start_string = r'\#{',
             comment_end_string = '}',
             line_statement_prefix = '%%',
             line_comment_prefix = '%#',

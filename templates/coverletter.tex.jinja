@@ -16,13 +16,13 @@
   BoldItalicFont = *-BoldItalic
 ]{FiraSans}
 \DeclareRobustCommand{\fira}[1]{{\firafont #1}}
-\newfontfamily\lorafont[
-  Path=\string~/Library/Fonts/,
-  UprightFont = *-Regular,
-  BoldFont = *-Bold,
-  ItalicFont = *-Italic,
-  BoldItalicFont = *-BoldItalic
-]{Lora}
+% The following works when I install Lora with `brew install lora-font`
+\newfontfamily\lorafont{Lora}[
+  UprightFont      = {Lora:wght=400},
+  ItalicFont       = {Lora-Italic:wght=400},
+  BoldFont         = {Lora:wght=700},
+  BoldItalicFont   = {Lora-Italic:wght=700},
+]
 \DeclareRobustCommand{\lora}[1]{{\lorafont #1}}
 \renewcommand*{\headerfont}{\lorafont}
 \renewcommand*{\headerfontlight}{\lorafont}

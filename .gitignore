@@ -5,3 +5,6 @@
 *.pyc
 data/*.yaml
 data/*.jpg
+.aider*
+.env
+.DS_Store

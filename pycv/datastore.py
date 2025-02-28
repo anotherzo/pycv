@@ -11,8 +11,8 @@ class DataStore(ABC):
         pass
 
 class YamlStore(DataStore):
-    def __init__(self):
-        self.datadir = 'data'
+    def __init__(self, datadir: str = 'data'):
+        self.datadir = datadir
         self.summary = None
         self.education = []
         self.jobs = []

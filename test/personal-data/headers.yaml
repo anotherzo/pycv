@@ -1,0 +1,9 @@
+- photo: test/personal-data/myprofile.jpeg
+  name:
+    - Firstname
+    - Lastname
+  position: Awesome Position
+  address: This is where I live
+  mobile: phonenumber-call-me
+  email: me@home.sweethome
+  linkedin: this-is-my-linked-in

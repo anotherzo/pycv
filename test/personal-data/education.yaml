@@ -1,0 +1,16 @@
+- edu: 1
+  title: My Awesome Degree
+  organization: SuperUni
+  location: Boston
+  date:
+    - September 2010
+    - June 2015
+  desc: I worked really really hard on this one.
+- edu: 2
+  title: My First Cool Degree
+  organization: TopCollege
+  location: New York
+  date:
+    - "2008"
+    - "2015"
+  desc:

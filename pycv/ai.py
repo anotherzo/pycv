@@ -4,14 +4,20 @@ import yaml
 import logging
 import instructor
 from anthropic import Anthropic
+from dotenv import load_dotenv
 from typing import Iterable
 from pydantic import BaseModel, Field
 from .baseclasses import CarStory, Cvitem, JobDescription, Summary, Letterinfo
+
+load_dotenv()  # Load environment variables from .env file
 
 class Ai:
     def __init__(self):
         self.model = "claude-3-5-sonnet-20240620"
         self.max_tokens = 4096
+        self.api_key = os.getenv('ANTHROPIC_API_KEY')
+        if not self.api_key:
+            raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def ask(self, prompt:str, respmodel):
