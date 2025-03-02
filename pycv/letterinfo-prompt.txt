@@ -7,7 +7,7 @@ Lies das Stelleninserat durch. Ich brauche ein Bewerbungsschreiben. Berücksicht
 - eine Begrüssungs-Zeile
 - den eigentlichen Brief
 
-Achte darauf, dass Du für den eigentlichen Brief höchstens zwei Absätze mit jeweils höchstens vier Sätzen bildest. Passe Deine Sprache an die Sprache des Inserates an.
+Achte darauf, dass Du für den eigentlichen Brief höchstens zwei Absätze mit jeweils höchstens vier kurzen Sätzen bildest. Passe Deine Sprache an die Sprache des Inserates an. Benutze Schweizer Hochdeutsch; insbesondere vermeide das Eszett.
 
 CAR-Stories: {cars}
 Arbeitszeugnisse: {statements}
