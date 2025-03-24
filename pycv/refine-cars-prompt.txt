@@ -1,5 +1,5 @@
 Ich gebe Dir weiter unten eine Liste mit CAR-Stories. Die Liste beinhaltet zu jeder Story eine "Challenge", eine "Action" und ein "Result". Ausserdem hat jede Story eine Liste von benötigten Skills, und jede Story hat einen Job-Identifier.
-Ausserdem gebe ich Dir den Link zu einem Stelleninserat.
+Ausserdem gebe ich Dir ein Stelleninserat.
 Lies das Stelleninserat. Ich möchte mich auf die Stelle bewerben und brauche ein Resume. Extrahiere dazu zu jedem Job aus jeder zugeordneten CAR-Story ein bis zwei kurze Stichpunkte auf Deutsch, die ich im Resume als nähere Job-Beschreibung benutzen kann. Pro Job sollen es höchstens sechs Stichpunkte sein.
 Als Antwort möchte ich einen neuen Datensatz mit Stichpunkten und dem jeweiligen Job-Identifier. Antworte in Schweizer Hochdeutsch und vermeide das Eszett.
 

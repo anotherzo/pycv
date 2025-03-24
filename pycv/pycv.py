@@ -17,12 +17,20 @@ class PyCv:
         """Initialize the PyCv class with OpenAI credentials"""
         self.datastore = YamlStore(datadir)
         self.datastore.load_data()
-        self.joblink = joblink
+        self.joblink = self._parse_joblink(joblink)
         self.projectname = projectname
         self.ai = Ai()
         if self.projectname == "test":
             self.ai = StubAi()
         self.logger = logging.getLogger(self.__class__.__name__)
+
+    def _parse_joblink(self, joblink):
+        if joblink.startswith("http"):
+            return joblink
+        else:
+            with open(joblink, 'r') as file:
+                jobad = file.read()
+            return jobad
 
     def _get_jinja_env(self):
         return jinja2.Environment(
@@ -65,7 +73,7 @@ class PyCv:
         latex_resume = template.render(
                 headers = self.datastore.headers,
                 name = self.datastore.headers['name'],
-                summary = self.ai.get_summary(self.datastore.skills, self.datastore.statements, self.joblink),
+                summary = self.ai.get_summary(self.datastore.skills, self.datastore.carstories, self.datastore.statements, self.datastore.jobs, self.joblink),
                 jobblocks = self._get_job_blocks(),
                 education = self.datastore.education,
                 skills = self.datastore.skills,
@@ -78,7 +86,7 @@ class PyCv:
 
     def _get_job_blocks(self) -> list:
         jobblocks = []
-        jobdescriptions = self.ai.get_job_summaries(self.datastore.jobs, self.datastore.statements, self.joblink)
+        jobdescriptions = self.ai.get_job_summaries(self.datastore.jobs, self.datastore.carstories, self.datastore.statements, self.joblink)
         jobitems = self.ai.get_experience(self.datastore.jobs, self.datastore.carstories, jobdescriptions, self.joblink)
         for job in self.datastore.jobs:
             jds = [jd for jd in jobdescriptions if jd.job == job.job]

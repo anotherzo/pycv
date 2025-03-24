@@ -1,8 +1,10 @@
 Ich gebe Dir unten eine Liste mit Jobs und eine Liste mit Arbeitszeugnissen ('statements'). Die Zeugnisse sind per job-ID mit den Jobs verknüpft.
-Ich geben Dir ausserdem den Link zu einem Stelleninserat.
-Lies das Stelleninserat durch. Ich möchte mich darauf bewerben und brauche ein Resume. Benutze die Zeugnisse und das Stelleninserat, um für die letzten beiden Jobs jeweils eine Zusammenfassung der wichtigsten Tätigkeiten in höchstens zwei kurzen Sätzen zu erstellen. Die Zusammenfassungen sollen in Deutsch so geschrieben sein, dass sie auf das Stelleninserat möglichst gut passen, aber bescheiden bleiben.
+Ich gebe auch eine Liste mit CAR-Stories mit "Action", "Challenge", "Result" und einer Liste von nötigen Skills. Jede CAR-Story ist über den Job-Identifier an einen Job gebunden.
+Ich geben Dir ausserdem ein Stelleninserat.
+Lies das Stelleninserat durch. Ich möchte mich darauf bewerben und brauche ein Resume. Benutze die Zeugnisse, die CAR-Stories und das Stelleninserat, um für die letzten beiden Jobs jeweils eine Zusammenfassung der wichtigsten Tätigkeiten in höchstens zwei kurzen Sätzen zu erstellen. Die Zusammenfassungen sollen in Deutsch so geschrieben sein, dass sie auf das Stelleninserat möglichst gut passen, aber bescheiden bleiben.
 Als Antwort erwarte ich eine neue Liste mit den Zusammenfassungen und den passenden Job-IDs. Antworte in Schweizer Hochdeutsch; insbesondere benutze kein Eszett.
 
 Jobs: {jobs}
+CAR-Stories: {cars}
 Zeugnisse: {statements}
 Stelleninserat: {job}

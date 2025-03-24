@@ -1,7 +1,11 @@
-Ich gebe Dir unten eine Liste mit Skills und eine Liste mit Arbeitszeugnissen und Aussagen von Mitarbeiter:innen ('statements'). Ich geben Dir ausserdem den Link zu einem Stelleninserat.
+Ich gebe Dir unten eine Liste mit Skills und eine Liste mit Arbeitszeugnissen und Aussagen von Mitarbeiter:innen ('statements').
+Ich gebe auch eine Liste mit Jobs und eine Liste mit CAR-Stories mit "Action", "Challenge", "Result" und einer Liste von nötigen Skills. Jede CAR-Story ist über den Job-Identifier an einen Job gebunden.
+Ich geben Dir ausserdem ein Stelleninserat.
 Lies das Stelleninserat durch. Ich möchte mich darauf bewerben.
-Benutze die Zeugnisse und Skills-Liste, um eine Kurzzusammenfassung zu meiner Person für den Anfang eines Resumes zu schreiben. Der Text soll in Deutsch verfasst sein. Der Text soll sprachlich möglichst gut auf das Stelleninserat passen und die wichtigen Keywords wenn möglich beinhalten, um von einer Prüfsoftware besser bewertet zu werden, aber bescheiden bleiben. Er soll aus nicht mehr als fünf kurzen Sätzen bestehen.
+Benutze die Zeugnisse, CAR-Stories und Skills-Liste, um eine Kurzzusammenfassung zu meiner Person für den Anfang eines Resumes zu schreiben. Der Text soll in Deutsch verfasst sein. Der Text soll sprachlich möglichst gut auf das Stelleninserat passen und die wichtigen Keywords wenn möglich beinhalten, um von einer Prüfsoftware besser bewertet zu werden, aber bescheiden bleiben. Er soll aus nicht mehr als fünf kurzen Sätzen bestehen.
 
 Skills: {skills}
+CAR-Stories: {cars}
+Jobs: {jobs}
 Zeugnisse: {statements}
 Stelleninserat: {job}

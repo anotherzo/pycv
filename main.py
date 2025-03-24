@@ -6,7 +6,7 @@ import click
 from pycv import PyCv
 
 @click.command()
-@click.option('--joblink', '-j', prompt='Link to the job ad', help='URL of the job advertisement')
+@click.option('--joblink', '-j', prompt='Link to the job ad', help='URL of the job advertisement. Can be a link to a local file.')
 @click.option('--projectname', '-n', prompt='Project name', help='Name for the output report')
 @click.option('--compile/--no-compile', '-c/-nc', default=True, help='Compile the LaTeX output (default: True)')
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose logging')

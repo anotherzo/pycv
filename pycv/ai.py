@@ -62,26 +62,29 @@ class Ai:
         )
         return self.ask(prompt, Iterable[Cvitem])
 
-    def get_job_summaries(self, skills:list, statements:list, joblink:str) -> Iterable[JobDescription]:
+    def get_job_summaries(self, jobs:list, carstories:list, statements:list, joblink:str) -> Iterable[JobDescription]:
         self.logger.info("Getting job summaries...")
         promptpath = os.path.join(os.path.dirname(__file__), 'jobdescription-prompt.txt')
         with open(promptpath, 'r') as f:
             prompt = f.read()
         prompt = prompt.format(
-                    jobs=self.get_json_for(skills),
+                    jobs=self.get_json_for(jobs),
+                    cars=self.get_json_for(carstories),
                     statements=self.get_json_for(statements),
                     job=joblink
         )
         return self.ask(prompt, Iterable[JobDescription])
 
-    def get_summary(self, skills:list, statements:list, joblink:str) -> Summary:
+    def get_summary(self, skills:list, carstories:list, statements:list, jobs:list, joblink:str) -> Summary:
         self.logger.info("Getting resume summary...")
         promptpath = os.path.join(os.path.dirname(__file__), 'summary-prompt.txt')
         with open(promptpath, 'r') as f:
             prompt = f.read()
         prompt = prompt.format(
                     skills=self.get_json_for(skills),
+                    cars=self.get_json_for(carstories),
                     statements=self.get_json_for(statements),
+                    jobs=self.get_json_for(jobs),
                     job=joblink
         )
         return self.ask(prompt, Summary)
