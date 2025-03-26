@@ -1,0 +1,22 @@
+- project: 1
+  title: SuperSoft
+  desc: >
+    SuperSoft is an application that solves everything: differential equations, Rubik's cube, all Breath Of The Wild Shrine riddles, and the question if pineapple belongs on pizza or not.
+  keypoints:
+    - Written in Ook
+    - Very low memory footprint; 96GB of RAM should be fine
+    - External quantum computing hardware not included
+  date:
+    - October 2023
+    - January 2024
+- project: 2
+  title: ShoeShine
+  desc: >
+    ShoeShine helps you in making your shoes shine. It's as simple as that. Shiny shoes are the key to success in any respectable job, so get your ShoeShine and apply (it) today!
+  keypoints:
+    - Greasy with a tendency to stink terrible
+    - Will set your shoes on fire if used on a daily basis
+    - Application needs to be done every two hours
+  date:
+    - January 2024
+    - now

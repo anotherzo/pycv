@@ -3,7 +3,7 @@ from typing import List, Dict, Optional
 import yaml
 import json
 from abc import ABC, abstractmethod
-from .baseclasses import Education, Job, CarStory, SkillCategory, Language, Statement, Summary
+from .baseclasses import Education, Job, CarStory, SkillCategory, Language, Statement, Summary, Project
 
 class DataStore(ABC):
     @abstractmethod
@@ -21,6 +21,7 @@ class YamlStore(DataStore):
         self.personaldata = []
         self.languages = []
         self.statements = []
+        self.projects = []
 
 
     def load_yaml(self, file_path: str) -> Dict:
@@ -51,6 +52,14 @@ class YamlStore(DataStore):
             self.jobs = sorted(
                 [Job(**entry) for entry in job_data],
                 key=lambda x: x.job
+            )
+        
+        # Load projects
+        if (data_path / "projects.yaml").exists():
+            project_data = self.load_yaml(str(data_path / "projects.yaml"))
+            self.projects = sorted(
+                [Project(**entry) for entry in project_data],
+                key=lambda x: x.project
             )
         
         # Load skills

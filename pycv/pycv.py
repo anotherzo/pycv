@@ -76,6 +76,7 @@ class PyCv:
                 summary = self.ai.get_summary(self.datastore.skills, self.datastore.carstories, self.datastore.statements, self.datastore.jobs, self.joblink),
                 jobblocks = self._get_job_blocks(),
                 education = self.datastore.education,
+                projects = self.datastore.projects,
                 skills = self.datastore.skills,
                 languages = self.datastore.languages,
                 joblink = self.joblink,

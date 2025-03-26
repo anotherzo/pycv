@@ -3,6 +3,7 @@
 \RequirePackage{fontspec}
 \usepackage[ngerman]{babel}
 \usepackage{multicol}
+\usepackage{csquotes}
 \geometry{left=2.5cm, top=2cm, right=2.5cm, bottom=2.5cm, footskip=1.5cm}
 \definecolor{awesome}{HTML}{a57b5c}
 \setbool{acvSectionColorHighlight}{true}
@@ -111,6 +112,28 @@
   \BLOCK{endif}
 }
   \BLOCK{endif}
+
+\BLOCK{endfor}
+\end{cventries}
+
+\cvsection{Projekte}
+\begin{cventries}
+\BLOCK{for entry in projects}
+\cventry
+  {}
+  {\VAR{entry.title}}
+  {}
+  {\VAR{entry.date[0]}\textemdash \VAR{entry.date[1]}}
+  {
+  \vspace{-0.2cm}
+  \VAR{entry.desc | trim}
+  \vspace{0.6cm}
+  \begin{cvitems}
+    \BLOCK{for item in entry.keypoints}
+  \item {\VAR{item}}
+    \BLOCK{endfor}
+  \end{cvitems}
+}
 
 \BLOCK{endfor}
 \end{cventries}

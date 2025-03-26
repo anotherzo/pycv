@@ -22,6 +22,13 @@ class Job(BaseModel):
     location: str
     date: List[str]
 
+class Project(BaseModel):
+    project: int
+    title: str
+    desc: str
+    keypoints: List[str]
+    date: List[str]
+
 class JobDescription(BaseModel):
     job: int
     description: str
